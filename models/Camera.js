@@ -6,7 +6,7 @@ const CameraSchema = new mongoose.Schema({
 		required: [true, 'Please add a name'],
 	},
 	position: {
-		type: 'Front' | 'Back',
+		type: String,
 		required: [true, 'Please add a position'],
 	},
 	car_id: {
