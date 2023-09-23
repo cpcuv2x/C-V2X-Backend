@@ -1,12 +1,73 @@
 const RSU = require('../models/RSU');
 
 //@desc     Get all RSUs
-//@route    GET /api/v1/rsus
+//@route    GET /api/rsus
 //@access   Public
 exports.getRSUs = async (req, res, next) => {
 	try {
 		const rsus = await RSU.find();
 		res.status(200).json({ success: true, count: rsus.length, data: rsus });
+	} catch (err) {
+		res.status(400).json({ success: false });
+	}
+};
+
+//@desc     Get single RSU
+//@route    GET /api/rsus/:id
+//@access   Public
+exports.getRSU = async (req, res, next) => {
+	try {
+		const rsu = await RSU.findById(req.params.id);
+
+		if (!rsu) {
+			res.status(400).json({ success: false });
+		}
+		res.status(200).json({ success: true, data: rsu });
+	} catch (err) {
+		res.status(400).json({ success: false });
+	}
+};
+
+//@desc     Create new RSU
+//@route    POST /api/rsus
+//@access   Public
+exports.createRSU = async (req, res, next) => {
+	const rsu = await RSU.create(req.body);
+	res.status(201).json({ success: true, data: rsu });
+};
+
+//@desc     Update RSU
+//@route    PUT /api/rsus/:id
+//@access   Public
+exports.updateRSU = async (req, res, next) => {
+	try {
+		const rsu = await RSU.findByIdAndUpdate(req.params.id, req.body, {
+			new: true,
+			runValidators: true,
+		});
+
+		if (!rsu) {
+			res.status(400).json({ success: false });
+		}
+
+		res.status(200).json({ success: true, data: rsu });
+	} catch (err) {
+		res.status(400).json({ success: false });
+	}
+};
+
+//@desc     Delete RSU
+//@route    DELETE /api/rsus/:id
+//@access   Public
+exports.deleteRSU = async (req, res, next) => {
+	try {
+		const rsu = await RSU.findByIdAndDelete(req.params.id);
+
+		if (!rsu) {
+			res.status(400).json({ success: false });
+		}
+
+		res.status(200).json({ success: true, data: {} });
 	} catch (err) {
 		res.status(400).json({ success: false });
 	}
