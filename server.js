@@ -14,7 +14,7 @@ connectDB();
 // Route files
 const cars = require('./routes/cars');
 const cameras = require('./routes/cameras');
-const drivers = require('./routes/cars');
+const drivers = require('./routes/drivers');
 const rsus = require('./routes/rsus');
 
 const app = express();
