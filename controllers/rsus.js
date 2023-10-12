@@ -6,7 +6,36 @@ const RSU = require('../models/RSU');
 exports.getRSUs = async (req, res, next) => {
 	try {
 		const rsus = await RSU.find();
-		res.status(200).json({ success: true, count: rsus.length, data: rsus });
+		const mapped_rsus = rsus.map((rsu) => {
+			return {
+				id: rsu._id,
+				name: rsu.name,
+				recommended_speed: rsu.recommended_speed,
+			};
+		});
+		res
+			.status(200)
+			.json({ success: true, count: rsus.length, data: mapped_rsus });
+	} catch (err) {
+		res.status(400).json({ success: false });
+	}
+};
+
+//@desc     Get all RSUs list
+//@route    GET /api/rsus/list
+//@access   Public
+exports.getRSUsList = async (req, res, next) => {
+	try {
+		const rsus = await RSU.find();
+		const mapped_rsus = rsus.map((rsu) => {
+			return {
+				id: rsu._id,
+				name: rsu.name,
+			};
+		});
+		res
+			.status(200)
+			.json({ success: true, count: rsus.length, data: mapped_rsus });
 	} catch (err) {
 		res.status(400).json({ success: false });
 	}
@@ -22,7 +51,12 @@ exports.getRSU = async (req, res, next) => {
 		if (!rsu) {
 			res.status(400).json({ success: false });
 		}
-		res.status(200).json({ success: true, data: rsu });
+		const mapped_rsu = {
+			id: rsu._id,
+			name: rsu.name,
+			recommended_speed: rsu.recommended_speed,
+		};
+		res.status(200).json({ success: true, data: mapped_rsu });
 	} catch (err) {
 		res.status(400).json({ success: false });
 	}
@@ -33,7 +67,12 @@ exports.getRSU = async (req, res, next) => {
 //@access   Public
 exports.createRSU = async (req, res, next) => {
 	const rsu = await RSU.create(req.body);
-	res.status(201).json({ success: true, data: rsu });
+	const mapped_rsu = {
+		id: rsu._id,
+		name: rsu.name,
+		recommended_speed: rsu.recommended_speed,
+	};
+	res.status(201).json({ success: true, data: mapped_rsu });
 };
 
 //@desc     Update RSU
@@ -49,8 +88,12 @@ exports.updateRSU = async (req, res, next) => {
 		if (!rsu) {
 			res.status(400).json({ success: false });
 		}
-
-		res.status(200).json({ success: true, data: rsu });
+		const mapped_rsu = {
+			id: rsu._id,
+			name: rsu.name,
+			recommended_speed: rsu.recommended_speed,
+		};
+		res.status(200).json({ success: true, data: mapped_rsu });
 	} catch (err) {
 		res.status(400).json({ success: false });
 	}
