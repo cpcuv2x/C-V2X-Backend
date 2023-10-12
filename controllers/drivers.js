@@ -6,9 +6,39 @@ const Driver = require('../models/Driver');
 exports.getDrivers = async (req, res, next) => {
 	try {
 		const drivers = await Driver.find();
+		const mapped_drivers = drivers.map((driver) => {
+			return {
+				id: driver._id,
+				name: driver.first_name + ' ' + driver.last_name,
+				first_name: driver.first_name,
+				last_name: driver.last_name,
+				phone_no: driver.phone_no,
+				username: driver.username,
+			};
+		});
 		res
 			.status(200)
-			.json({ success: true, count: drivers.length, data: drivers });
+			.json({ success: true, count: drivers.length, data: mapped_drivers });
+	} catch (err) {
+		res.status(400).json({ success: false });
+	}
+};
+
+//@desc     Get all drivers
+//@route    GET /api/drivers/list
+//@access   Public
+exports.getDriversList = async (req, res, next) => {
+	try {
+		const drivers = await Driver.find();
+		const mapped_drivers = drivers.map((driver) => {
+			return {
+				id: driver._id,
+				name: driver.first_name + ' ' + driver.last_name,
+			};
+		});
+		res
+			.status(200)
+			.json({ success: true, count: drivers.length, data: mapped_drivers });
 	} catch (err) {
 		res.status(400).json({ success: false });
 	}
@@ -24,7 +54,15 @@ exports.getDriver = async (req, res, next) => {
 		if (!driver) {
 			res.status(400).json({ success: false });
 		}
-		res.status(200).json({ success: true, data: driver });
+		const mapped_driver = {
+			id: driver._id,
+			name: driver.first_name + ' ' + driver.last_name,
+			first_name: driver.first_name,
+			last_name: driver.last_name,
+			phone_no: driver.phone_no,
+			username: driver.username,
+		};
+		res.status(200).json({ success: true, data: mapped_driver });
 	} catch (err) {
 		res.status(400).json({ success: false });
 	}
@@ -35,7 +73,15 @@ exports.getDriver = async (req, res, next) => {
 //@access   Public
 exports.createDriver = async (req, res, next) => {
 	const driver = await Driver.create(req.body);
-	res.status(201).json({ success: true, data: driver });
+	const mapped_driver = {
+		id: driver._id,
+		name: driver.first_name + ' ' + driver.last_name,
+		first_name: driver.first_name,
+		last_name: driver.last_name,
+		phone_no: driver.phone_no,
+		username: driver.username,
+	};
+	res.status(201).json({ success: true, data: mapped_driver });
 };
 
 //@desc     Update driver
@@ -51,8 +97,15 @@ exports.updateDriver = async (req, res, next) => {
 		if (!driver) {
 			res.status(400).json({ success: false });
 		}
-
-		res.status(200).json({ success: true, data: driver });
+		const mapped_driver = {
+			id: driver._id,
+			name: driver.first_name + ' ' + driver.last_name,
+			first_name: driver.first_name,
+			last_name: driver.last_name,
+			phone_no: driver.phone_no,
+			username: driver.username,
+		};
+		res.status(200).json({ success: true, data: mapped_driver });
 	} catch (err) {
 		res.status(400).json({ success: false });
 	}
