@@ -6,7 +6,7 @@ const RSUSchema = new mongoose.Schema({
 		required: [true, 'Please add a name'],
 	},
 	recommended_speed: {
-		type: Number,
+		type: String,
 		required: [true, 'Please add a recommended speed'],
 	},
 	createdAt: {
