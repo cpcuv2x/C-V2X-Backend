@@ -1,8 +1,15 @@
 const express = require('express');
-const { getCars } = require('../controllers/cars');
+const {
+	getCars,
+	createCar,
+	updateCar,
+	deleteCar,
+	getCar,
+} = require('../controllers/cars');
 
 const router = express.Router();
 
-router.route('/').get(getCars);
+router.route('/').get(getCars).post(createCar);
+router.route('/:id').get(getCar).put(updateCar).delete(deleteCar);
 
 module.exports = router;
