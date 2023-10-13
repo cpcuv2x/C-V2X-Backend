@@ -9,6 +9,11 @@ exports.getCameras = async (req, res, next) => {
 	try {
 		const cameras = await Camera.aggregate([
 			{
+				$addFields: {
+					tempId: { $toString: '$_id' },
+				},
+			},
+			{
 				$lookup: {
 					from: 'cars',
 					localField: 'car_id',
@@ -18,6 +23,23 @@ exports.getCameras = async (req, res, next) => {
 			},
 			{
 				$unwind: '$carData',
+			},
+			{
+				$match: {
+					tempId: { $regex: req.body.id ?? '', $options: 'i' },
+					name: {
+						$regex: req.body.name ?? '',
+						$options: 'i',
+					},
+					position: {
+						$regex: req.body.position ?? '',
+						$options: 'i',
+					},
+					'carData.name': {
+						$regex: req.body.car ?? '',
+						$options: 'i',
+					},
+				},
 			},
 			{
 				$project: {
