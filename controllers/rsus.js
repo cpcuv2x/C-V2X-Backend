@@ -2,11 +2,29 @@ const mongoose = require('mongoose');
 const RSU = require('../models/RSU');
 
 //@desc     Get all RSUs
-//@route    GET /api/rsus
+//@route    PUT /api/rsus
 //@access   Public
 exports.getRSUs = async (req, res, next) => {
 	try {
 		const rsus = await RSU.aggregate([
+			{
+				$addFields: {
+					tempUserId: { $toString: '$_id' },
+				},
+			},
+			{
+				$match: {
+					tempUserId: { $regex: req.body.id ?? '', $options: 'i' },
+					name: {
+						$regex: req.body.name ?? '',
+						$options: 'i',
+					},
+					recommended_speed: {
+						$regex: req.body.recommended_speed ?? '',
+						$options: 'i',
+					},
+				},
+			},
 			{
 				$project: {
 					id: '$_id',
@@ -15,7 +33,6 @@ exports.getRSUs = async (req, res, next) => {
 				},
 			},
 		]);
-
 		res.status(200).json({ success: true, count: rsus.length, data: rsus });
 	} catch (err) {
 		res.status(400).json({ success: false });

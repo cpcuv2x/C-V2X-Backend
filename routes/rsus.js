@@ -10,7 +10,7 @@ const {
 
 const router = express.Router();
 
-router.route('/').get(getRSUs).post(createRSU);
+router.route('/').put(getRSUs).post(createRSU);
 router.route('/list').get(getRSUsList);
 router.route('/:id').get(getRSU).put(updateRSU).delete(deleteRSU);
 
