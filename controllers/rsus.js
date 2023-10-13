@@ -9,12 +9,12 @@ exports.getRSUs = async (req, res, next) => {
 		const rsus = await RSU.aggregate([
 			{
 				$addFields: {
-					tempUserId: { $toString: '$_id' },
+					tempId: { $toString: '$_id' },
 				},
 			},
 			{
 				$match: {
-					tempUserId: { $regex: req.body.id ?? '', $options: 'i' },
+					tempId: { $regex: req.body.id ?? '', $options: 'i' },
 					name: {
 						$regex: req.body.name ?? '',
 						$options: 'i',
