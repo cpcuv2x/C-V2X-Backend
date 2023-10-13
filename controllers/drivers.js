@@ -2,11 +2,37 @@ const mongoose = require('mongoose');
 const Driver = require('../models/Driver');
 
 //@desc     Get all drivers
-//@route    GET /api/drivers
+//@route    PUT /api/drivers
 //@access   Public
 exports.getDrivers = async (req, res, next) => {
 	try {
 		const drivers = await Driver.aggregate([
+			{
+				$addFields: {
+					tempId: { $toString: '$_id' },
+				},
+			},
+			{
+				$match: {
+					tempId: { $regex: req.body.id ?? '', $options: 'i' },
+					first_name: {
+						$regex: req.body.first_name ?? '',
+						$options: 'i',
+					},
+					last_name: {
+						$regex: req.body.last_name ?? '',
+						$options: 'i',
+					},
+					phone_no: {
+						$regex: req.body.phone_no ?? '',
+						$options: 'i',
+					},
+					username: {
+						$regex: req.body.username ?? '',
+						$options: 'i',
+					},
+				},
+			},
 			{
 				$project: {
 					id: '$_id',
@@ -26,7 +52,7 @@ exports.getDrivers = async (req, res, next) => {
 	}
 };
 
-//@desc     Get all drivers
+//@desc     Get all drivers list
 //@route    GET /api/drivers/list
 //@access   Public
 exports.getDriversList = async (req, res, next) => {
