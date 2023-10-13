@@ -10,7 +10,7 @@ const {
 
 const router = express.Router();
 
-router.route('/').get(getCameras).post(createCamera);
+router.route('/').put(getCameras).post(createCamera);
 router.route('/list').get(getCamerasList);
 router.route('/:id').get(getCamera).put(updateCamera).delete(deleteCamera);
 

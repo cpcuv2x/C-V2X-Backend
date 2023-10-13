@@ -3,7 +3,7 @@ const Camera = require('../models/Camera');
 const Car = require('../models/Car');
 
 //@desc     Get all cameras
-//@route    GET /api/cameras
+//@route    PUT /api/cameras
 //@access   Public
 exports.getCameras = async (req, res, next) => {
 	try {
