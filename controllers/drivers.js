@@ -35,6 +35,7 @@ exports.getDrivers = async (req, res, next) => {
 			},
 			{
 				$project: {
+					_id: 0,
 					id: '$_id',
 					name: { $concat: ['$first_name', ' ', '$last_name'] },
 					first_name: 1,
@@ -44,11 +45,12 @@ exports.getDrivers = async (req, res, next) => {
 				},
 			},
 		]);
-		res
+
+		return res
 			.status(200)
 			.json({ success: true, count: drivers.length, data: drivers });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -60,16 +62,18 @@ exports.getDriversList = async (req, res, next) => {
 		const drivers = await Driver.aggregate([
 			{
 				$project: {
+					_id: 0,
 					id: '$_id',
 					name: { $concat: ['$first_name', ' ', '$last_name'] },
 				},
 			},
 		]);
-		res
+
+		return res
 			.status(200)
 			.json({ success: true, count: drivers.length, data: drivers });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -84,6 +88,7 @@ exports.getDriver = async (req, res, next) => {
 			},
 			{
 				$project: {
+					_id: 0,
 					id: '$_id',
 					name: { $concat: ['$first_name', ' ', '$last_name'] },
 					first_name: 1,
@@ -94,12 +99,15 @@ exports.getDriver = async (req, res, next) => {
 			},
 		]);
 
-		if (!driver) {
-			res.status(400).json({ success: false });
+		if (driver === 0) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'the driver not found' });
 		}
-		res.status(200).json({ success: true, data: driver });
+
+		return res.status(200).json({ success: true, data: driver[0] });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -107,16 +115,23 @@ exports.getDriver = async (req, res, next) => {
 //@route    POST /api/drivers
 //@access   Public
 exports.createDriver = async (req, res, next) => {
-	const driver = await Driver.create(req.body);
-	const mapped_driver = {
-		id: driver._id,
-		name: driver.first_name + ' ' + driver.last_name,
-		first_name: driver.first_name,
-		last_name: driver.last_name,
-		phone_no: driver.phone_no,
-		username: driver.username,
-	};
-	res.status(201).json({ success: true, data: mapped_driver });
+	try {
+		const driver = await Driver.create(req.body);
+
+		return res.status(201).json({
+			success: true,
+			data: {
+				id: driver._id,
+				name: `${driver.first_name} ${driver.last_name}`,
+				first_name: driver.first_name,
+				last_name: driver.last_name,
+				phone_no: driver.phone_no,
+				username: driver.username,
+			},
+		});
+	} catch (err) {
+		return res.status(400).json({ success: false, error: err.message });
+	}
 };
 
 //@desc     Update driver
@@ -130,19 +145,24 @@ exports.updateDriver = async (req, res, next) => {
 		});
 
 		if (!driver) {
-			res.status(400).json({ success: false });
+			return res
+				.status(400)
+				.json({ success: false, error: 'the driver not found' });
 		}
-		const mapped_driver = {
-			id: driver._id,
-			name: driver.first_name + ' ' + driver.last_name,
-			first_name: driver.first_name,
-			last_name: driver.last_name,
-			phone_no: driver.phone_no,
-			username: driver.username,
-		};
-		res.status(200).json({ success: true, data: mapped_driver });
+
+		return res.status(200).json({
+			success: true,
+			data: {
+				id: driver._id,
+				name: `${driver.first_name} ${driver.last_name}`,
+				first_name: driver.first_name,
+				last_name: driver.last_name,
+				phone_no: driver.phone_no,
+				username: driver.username,
+			},
+		});
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -154,11 +174,13 @@ exports.deleteDriver = async (req, res, next) => {
 		const driver = await Driver.findByIdAndDelete(req.params.id);
 
 		if (!driver) {
-			res.status(400).json({ success: false });
+			return res
+				.status(400)
+				.json({ success: false, error: 'the driver not found' });
 		}
 
-		res.status(200).json({ success: true, data: {} });
+		return res.status(200).json({ success: true, data: {} });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
