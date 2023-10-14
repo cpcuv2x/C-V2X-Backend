@@ -25,8 +25,112 @@ exports.getCars = async (req, res, next) => {
 				},
 			},
 			{
+				$addFields: {
+					tempId: { $toString: '$_id' },
+					tempDriverId: { $toString: { $arrayElemAt: ['$driverInfo._id', 0] } },
+					tempFrontCamId: {
+						$let: {
+							vars: {
+								frontCamera: {
+									$arrayElemAt: [
+										{
+											$filter: {
+												input: '$cameras',
+												as: 'camera',
+												cond: { $eq: ['$$camera.position', 'Front'] },
+											},
+										},
+										0,
+									],
+								},
+							},
+							in: { $toString: { $ifNull: ['$$frontCamera._id', null] } },
+						},
+					},
+					tempBackCamId: {
+						$let: {
+							vars: {
+								backCamera: {
+									$arrayElemAt: [
+										{
+											$filter: {
+												input: '$cameras',
+												as: 'camera',
+												cond: { $eq: ['$$camera.position', 'Back'] },
+											},
+										},
+										0,
+									],
+								},
+							},
+							in: { $toString: { $ifNull: ['$$backCamera._id', null] } },
+						},
+					},
+				},
+			},
+			{
+				$match: {
+					tempId: { $regex: req.body.id ?? '', $options: 'i' },
+					name: {
+						$regex: req.body.name ?? '',
+						$options: 'i',
+					},
+					license_plate: {
+						$regex: req.body.license_plate ?? '',
+						$options: 'i',
+					},
+					model: {
+						$regex: req.body.model ?? '',
+						$options: 'i',
+					},
+					$or: [
+						{
+							tempDriverId:
+								req.body.driver_id && req.body.driver_id.length !== 0
+									? req.body.driver_id
+									: null,
+						},
+						{
+							tempDriverId: { $regex: req.body.driver_id ?? '', $options: 'i' },
+						},
+					],
+					$or: [
+						{
+							tempFrontCamId:
+								req.body.front_cam_id && req.body.front_cam_id.length !== 0
+									? req.body.front_cam_id
+									: null,
+						},
+						{
+							tempFrontCamId: {
+								$regex: req.body.front_cam_id ?? '',
+								$options: 'i',
+							},
+						},
+					],
+					$or: [
+						{
+							tempBackCamId:
+								req.body.back_cam_id && req.body.back_cam_id.length !== 0
+									? req.body.back_cam_id
+									: null,
+						},
+						{
+							tempBackCamId: {
+								$regex: req.body.back_cam_id ?? '',
+								$options: 'i',
+							},
+						},
+					],
+				},
+			},
+			{
 				$project: {
-					_id: 1,
+					_id: 0,
+					id: '$_id',
+					name: 1,
+					license_plate: 1,
+					model: 1,
 					driver_id: 1,
 					driver: {
 						$concat: [
@@ -49,7 +153,10 @@ exports.getCars = async (req, res, next) => {
 				},
 			},
 		]);
-		res.status(200).json({ success: true, count: cars.length, data: cars });
+
+		return res
+			.status(200)
+			.json({ success: true, count: cars.length, data: cars });
 	} catch (err) {
 		res.status(400).json({ success: false });
 	}
@@ -60,17 +167,13 @@ exports.getCars = async (req, res, next) => {
 //@access   Public
 exports.getCarsList = async (req, res, next) => {
 	try {
-		const cars = await Car.aggregate([
-			{
-				$project: {
-					id: '$_id',
-					name: 1,
-				},
-			},
-		]);
-		res.status(200).json({ success: true, count: cars.length, data: cars });
+		const cars = await Car.find({}, { _id: 0, id: '$_id', name: 1 });
+
+		return res
+			.status(200)
+			.json({ success: true, count: cars.length, data: cars });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -101,7 +204,11 @@ exports.getCar = async (req, res, next) => {
 			},
 			{
 				$project: {
-					_id: 1,
+					_id: 0,
+					id: '$_id',
+					name: 1,
+					license_plate: 1,
+					model: 1,
 					driver_id: 1,
 					driver: {
 						$concat: [
@@ -126,11 +233,14 @@ exports.getCar = async (req, res, next) => {
 		]);
 
 		if (!car) {
-			res.status(400).json({ success: false });
+			return res
+				.status(400)
+				.json({ success: false, error: 'the car not found' });
 		}
-		res.status(200).json({ success: true, data: car });
+
+		return res.status(200).json({ success: true, data: car });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -138,23 +248,34 @@ exports.getCar = async (req, res, next) => {
 //@route    POST /api/cars
 //@access   Public
 exports.createCar = async (req, res, next) => {
+	let carData;
+
 	if (req.body.driver_id && req.body.driver_id.length !== 0) {
-		const driver = await Driver.exists({
+		const driverExists = await Driver.exists({
 			_id: new mongoose.Types.ObjectId(req.body.driver_id),
 		});
-		if (!driver) {
-			res.status(400).json({ success: false });
-		} else {
-			const car = await Car.create(req.body);
-			res.status(201).json({ success: true, data: car });
+
+		if (!driverExists) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'the driver not found' });
 		}
+
+		carData = req.body;
 	} else {
-		const car = await Car.create({
+		carData = {
 			name: req.body.name,
 			license_plate: req.body.license_plate,
 			model: req.body.model,
-		});
-		res.status(201).json({ success: true, data: car });
+		};
+	}
+
+	try {
+		const car = await Car.create(carData);
+
+		return res.status(201).json({ success: true, data: car });
+	} catch (err) {
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -162,48 +283,44 @@ exports.createCar = async (req, res, next) => {
 //@route    PUT /api/cars/:id
 //@access   Public
 exports.updateCar = async (req, res, next) => {
-	try {
-		if (req.body.driver_id && req.body.driver_id.length !== 0) {
-			const driver = await Driver.exists({
-				_id: new mongoose.Types.ObjectId(req.body.driver_id),
-			});
-			if (!driver) {
-				res.status(400).json({ success: false });
-			} else {
-				const car = await Car.findByIdAndUpdate(req.params.id, req.body, {
-					new: true,
-					runValidators: true,
-				});
+	let carData;
 
-				if (!car) {
-					res.status(400).json({ success: false });
-				}
+	if (req.body.driver_id && req.body.driver_id.length !== 0) {
+		const driverExists = await Driver.exists({
+			_id: new mongoose.Types.ObjectId(req.body.driver_id),
+		});
 
-				res.status(200).json({ success: true, data: car });
-			}
-		} else {
-			const car = await Car.findByIdAndUpdate(
-				req.params.id,
-				{
-					name: req.body.name,
-					license_plate: req.body.license_plate,
-					model: req.body.model,
-					driver_id: null,
-				},
-				{
-					new: true,
-					runValidators: true,
-				}
-			);
-
-			if (!car) {
-				res.status(400).json({ success: false });
-			}
-
-			res.status(200).json({ success: true, data: car });
+		if (!driverExists) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'the driver not found' });
 		}
+
+		carData = req.body;
+	} else {
+		carData = {
+			name: req.body.name,
+			license_plate: req.body.license_plate,
+			model: req.body.model,
+			driver_id: null,
+		};
+	}
+
+	try {
+		const car = await Car.findByIdAndUpdate(req.params.id, carData, {
+			new: true,
+			runValidators: true,
+		});
+
+		if (!car) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'the car not found' });
+		}
+
+		return res.status(200).json({ success: true, data: car });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -215,11 +332,13 @@ exports.deleteCar = async (req, res, next) => {
 		const car = await Car.findByIdAndDelete(req.params.id);
 
 		if (!car) {
-			res.status(400).json({ success: false });
+			return res
+				.status(400)
+				.json({ success: false, error: 'the car not found' });
 		}
 
-		res.status(200).json({ success: true, data: {} });
+		return res.status(200).json({ success: true, data: {} });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
