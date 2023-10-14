@@ -9,11 +9,6 @@ exports.getCameras = async (req, res, next) => {
 	try {
 		const cameras = await Camera.aggregate([
 			{
-				$addFields: {
-					tempId: { $toString: '$_id' },
-				},
-			},
-			{
 				$lookup: {
 					from: 'cars',
 					localField: 'car_id',
@@ -23,6 +18,12 @@ exports.getCameras = async (req, res, next) => {
 			},
 			{
 				$unwind: '$carData',
+			},
+			{
+				$addFields: {
+					tempId: { $toString: '$_id' },
+					tempCarId: { $toString: '$carData._id' },
+				},
 			},
 			{
 				$match: {
@@ -35,14 +36,15 @@ exports.getCameras = async (req, res, next) => {
 						$regex: req.body.position ?? '',
 						$options: 'i',
 					},
-					'carData.name': {
-						$regex: req.body.car ?? '',
+					tempCarId: {
+						$regex: req.body.car_id ?? '',
 						$options: 'i',
 					},
 				},
 			},
 			{
 				$project: {
+					_id: 0,
 					id: '$_id',
 					name: 1,
 					position: 1,
@@ -52,11 +54,11 @@ exports.getCameras = async (req, res, next) => {
 			},
 		]);
 
-		res
+		return res
 			.status(200)
 			.json({ success: true, count: cameras.length, data: cameras });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -65,20 +67,13 @@ exports.getCameras = async (req, res, next) => {
 //@access   Public
 exports.getCamerasList = async (req, res, next) => {
 	try {
-		const cameras = await Camera.aggregate([
-			{
-				$project: {
-					id: '$_id',
-					name: 1,
-				},
-			},
-		]);
+		const cameras = await Camera.find({}, { _id: 0, id: '$_id', name: 1 });
 
-		res
+		return res
 			.status(200)
 			.json({ success: true, count: cameras.length, data: cameras });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -104,6 +99,7 @@ exports.getCamera = async (req, res, next) => {
 			},
 			{
 				$project: {
+					_id: 0,
 					id: '$_id',
 					name: 1,
 					position: 1,
@@ -113,12 +109,15 @@ exports.getCamera = async (req, res, next) => {
 			},
 		]);
 
-		if (!camera) {
-			res.status(400).json({ success: false });
+		if (camera.length === 0) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'the camera not found' });
 		}
-		res.status(200).json({ success: true, data: camera });
+
+		return res.status(200).json({ success: true, data: camera[0] });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -126,14 +125,21 @@ exports.getCamera = async (req, res, next) => {
 //@route    POST /api/cameras
 //@access   Public
 exports.createCamera = async (req, res, next) => {
-	const car = await Car.exists({
-		_id: new mongoose.Types.ObjectId(req.body.car_id),
-	});
-	if (!car) {
-		res.status(400).json({ success: false });
-	} else {
+	try {
+		const carExists = await Car.exists({
+			_id: new mongoose.Types.ObjectId(req.body.car_id),
+		});
+
+		if (!carExists) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'the car not found' });
+		}
+
 		const camera = await Camera.create(req.body);
-		res.status(201).json({ success: true, data: camera });
+		return res.status(201).json({ success: true, data: camera });
+	} catch (err) {
+		return res.status(500).json({ success: false, error: err.message });
 	}
 };
 
@@ -142,25 +148,30 @@ exports.createCamera = async (req, res, next) => {
 //@access   Public
 exports.updateCamera = async (req, res, next) => {
 	try {
-		const car = await Car.exists({
+		const carExists = await Car.exists({
 			_id: new mongoose.Types.ObjectId(req.body.car_id),
 		});
-		if (!car) {
-			res.status(400).json({ success: false });
-		} else {
-			const camera = await Camera.findByIdAndUpdate(req.params.id, req.body, {
-				new: true,
-				runValidators: true,
-			});
 
-			if (!camera) {
-				res.status(400).json({ success: false });
-			}
-
-			res.status(200).json({ success: true, data: camera });
+		if (!carExists) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'the car not found' });
 		}
+
+		const camera = await Camera.findByIdAndUpdate(req.params.id, req.body, {
+			new: true,
+			runValidators: true,
+		});
+
+		if (!camera) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'the camera not found' });
+		}
+
+		return res.status(200).json({ success: true, data: camera });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -172,11 +183,13 @@ exports.deleteCamera = async (req, res, next) => {
 		const camera = await Camera.findByIdAndDelete(req.params.id);
 
 		if (!camera) {
-			res.status(400).json({ success: false });
+			return res
+				.status(400)
+				.json({ success: false, error: 'the camera not found' });
 		}
 
-		res.status(200).json({ success: true, data: {} });
+		return res.status(200).json({ success: true, data: {} });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
