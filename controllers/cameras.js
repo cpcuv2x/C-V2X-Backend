@@ -22,6 +22,7 @@ exports.getCameras = async (req, res, next) => {
 			{
 				$addFields: {
 					tempId: { $toString: '$_id' },
+					tempCarId: { $toString: '$carData._id' },
 				},
 			},
 			{
@@ -35,8 +36,8 @@ exports.getCameras = async (req, res, next) => {
 						$regex: req.body.position ?? '',
 						$options: 'i',
 					},
-					'carData.name': {
-						$regex: req.body.car ?? '',
+					tempCarId: {
+						$regex: req.body.car_id ?? '',
 						$options: 'i',
 					},
 				},
