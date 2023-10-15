@@ -7,6 +7,7 @@ const Driver = require('../models/Driver');
 //@access   Public
 exports.getCars = async (req, res, next) => {
 	try {
+		console.log(req.body);
 		const cars = await Car.aggregate([
 			{
 				$lookup: {
@@ -83,43 +84,54 @@ exports.getCars = async (req, res, next) => {
 						$regex: req.body.model ?? '',
 						$options: 'i',
 					},
-					$or: [
+					$and: [
 						{
-							tempDriverId:
-								req.body.driver_id && req.body.driver_id.length !== 0
-									? req.body.driver_id
-									: null,
+							$or: [
+								{
+									tempDriverId:
+										req.body.driver_id && req.body.driver_id.length !== 0
+											? req.body.driver_id
+											: null,
+								},
+								{
+									tempDriverId: {
+										$regex: req.body.driver_id ?? '',
+										$options: 'i',
+									},
+								},
+							],
 						},
 						{
-							tempDriverId: { $regex: req.body.driver_id ?? '', $options: 'i' },
-						},
-					],
-					$or: [
-						{
-							tempFrontCamId:
-								req.body.front_cam_id && req.body.front_cam_id.length !== 0
-									? req.body.front_cam_id
-									: null,
-						},
-						{
-							tempFrontCamId: {
-								$regex: req.body.front_cam_id ?? '',
-								$options: 'i',
-							},
-						},
-					],
-					$or: [
-						{
-							tempBackCamId:
-								req.body.back_cam_id && req.body.back_cam_id.length !== 0
-									? req.body.back_cam_id
-									: null,
+							$or: [
+								{
+									tempFrontCamId:
+										req.body.front_cam_id && req.body.front_cam_id.length !== 0
+											? req.body.front_cam_id
+											: null,
+								},
+								{
+									tempFrontCamId: {
+										$regex: req.body.front_cam_id ?? '',
+										$options: 'i',
+									},
+								},
+							],
 						},
 						{
-							tempBackCamId: {
-								$regex: req.body.back_cam_id ?? '',
-								$options: 'i',
-							},
+							$or: [
+								{
+									tempBackCamId:
+										req.body.back_cam_id && req.body.back_cam_id.length !== 0
+											? req.body.back_cam_id
+											: null,
+								},
+								{
+									tempBackCamId: {
+										$regex: req.body.back_cam_id ?? '',
+										$options: 'i',
+									},
+								},
+							],
 						},
 					],
 				},
@@ -132,6 +144,9 @@ exports.getCars = async (req, res, next) => {
 					license_plate: 1,
 					model: 1,
 					driver_id: 1,
+					tempDriverId: 1,
+					tempFrontCamId: 1,
+					tempBackCamId: 1,
 					driver: {
 						$concat: [
 							{ $arrayElemAt: ['$driverInfo.first_name', 0] },
@@ -153,6 +168,7 @@ exports.getCars = async (req, res, next) => {
 				},
 			},
 		]);
+		console.log(cars);
 
 		return res
 			.status(200)
