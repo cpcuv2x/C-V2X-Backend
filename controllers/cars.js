@@ -7,7 +7,6 @@ const Driver = require('../models/Driver');
 //@access   Public
 exports.getCars = async (req, res, next) => {
 	try {
-		console.log(req.body);
 		const cars = await Car.aggregate([
 			{
 				$lookup: {
@@ -168,7 +167,6 @@ exports.getCars = async (req, res, next) => {
 				},
 			},
 		]);
-		console.log(cars);
 
 		return res
 			.status(200)
