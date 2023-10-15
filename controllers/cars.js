@@ -143,9 +143,6 @@ exports.getCars = async (req, res, next) => {
 					license_plate: 1,
 					model: 1,
 					driver_id: 1,
-					tempDriverId: 1,
-					tempFrontCamId: 1,
-					tempBackCamId: 1,
 					driver: {
 						$concat: [
 							{ $arrayElemAt: ['$driverInfo.first_name', 0] },
