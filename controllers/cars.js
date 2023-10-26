@@ -163,7 +163,7 @@ exports.getCars = async (req, res, next) => {
 					},
 				},
 			},
-		]);
+		]).sort({ name: 1 });
 
 		return res
 			.status(200)
@@ -178,7 +178,9 @@ exports.getCars = async (req, res, next) => {
 //@access   Public
 exports.getCarsList = async (req, res, next) => {
 	try {
-		const cars = await Car.find({}, { _id: 0, id: '$_id', name: 1 });
+		const cars = await Car.find({}, { _id: 0, id: '$_id', name: 1 }).sort({
+			name: 1,
+		});
 
 		return res
 			.status(200)

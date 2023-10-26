@@ -44,7 +44,7 @@ exports.getDrivers = async (req, res, next) => {
 					username: 1,
 				},
 			},
-		]);
+		]).sort({ first_name: 1, last_name: 1 });
 
 		return res
 			.status(200)
@@ -67,7 +67,7 @@ exports.getDriversList = async (req, res, next) => {
 					name: { $concat: ['$first_name', ' ', '$last_name'] },
 				},
 			},
-		]);
+		]).sort({ name: 1 });
 
 		return res
 			.status(200)

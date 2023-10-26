@@ -52,7 +52,7 @@ exports.getCameras = async (req, res, next) => {
 					car: '$carData.name',
 				},
 			},
-		]);
+		]).sort({ name: 1 });
 
 		return res
 			.status(200)
@@ -67,7 +67,9 @@ exports.getCameras = async (req, res, next) => {
 //@access   Public
 exports.getCamerasList = async (req, res, next) => {
 	try {
-		const cameras = await Camera.find({}, { _id: 0, id: '$_id', name: 1 });
+		const cameras = await Camera.find({}, { _id: 0, id: '$_id', name: 1 }).sort(
+			{ name: 1 }
+		);
 
 		return res
 			.status(200)
