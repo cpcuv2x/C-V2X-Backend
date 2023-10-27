@@ -16,6 +16,7 @@ const cars = require('./routes/cars');
 const cameras = require('./routes/cameras');
 const drivers = require('./routes/drivers');
 const rsus = require('./routes/rsus');
+const emergencies = require('./routes/emergencies');
 
 const app = express();
 app.use(cors());
@@ -26,6 +27,7 @@ app.use('/api/cars', cars);
 app.use('/api/cameras', cameras);
 app.use('/api/drivers', drivers);
 app.use('/api/rsus', rsus);
+app.use('/api/emergencies', emergencies);
 
 const server = app.listen(
 	PORT,
