@@ -57,7 +57,7 @@ exports.getEmergencies = async (req, res, next) => {
 					},
 				},
 			},
-		]);
+		]).sort({ car_name: 1 });
 
 		return res
 			.status(200)
@@ -94,16 +94,6 @@ exports.createEmergency = async (req, res, next) => {
 //@access   Public
 exports.updateEmergency = async (req, res, next) => {
 	try {
-		const carExists = await Car.exists({
-			_id: new mongoose.Types.ObjectId(req.body.car_id),
-		});
-
-		if (!carExists) {
-			return res
-				.status(400)
-				.json({ success: false, error: 'the car not found' });
-		}
-
 		if (
 			req.body.status !== 'pending' &&
 			req.body.status !== 'inProgress' &&
