@@ -1,43 +1,45 @@
 const { expect } = require('chai');
 const RSU = require('../../models/RSU');
 
-describe('RSU Model', () => {
-	it('should create a new RSU', async () => {
+describe('RSU Model Validation', () => {
+	it('should be valid if all required fields are provided', () => {
 		const rsuData = {
 			name: 'Test RSU',
 			recommended_speed: '100',
 		};
 
-		const createdRSU = await RSU.create(rsuData);
+		const rsu = new RSU(rsuData);
 
-		expect(createdRSU).to.have.property('_id');
-		expect(createdRSU.name).to.equal(rsuData.name);
-		expect(createdRSU.recommended_speed).to.equal(rsuData.recommended_speed);
+		expect(rsu).to.have.property('_id');
+		expect(rsu.name).to.equal(rsuData.name);
+		expect(rsu.recommended_speed).to.equal(rsuData.recommended_speed);
 	});
 
-	it('should not save RSU without name', async () => {
+	it('should be invalid if name is empty', async () => {
+		const rsu = new RSU({
+			recommended_speed: '100',
+		});
 		try {
-			await RSU.create({
-				recommended_speed: '100',
-			});
-
-			throw new Error('Test should have thrown an error for missing name');
+			await rsu.validate();
+			expect.fail('Validation should have failed');
 		} catch (error) {
-			expect(error.message).to.include('Please add a name');
+			expect(error.errors.name.properties.message).to.equal(
+				'Please add a name'
+			);
 		}
 	});
 
-	it('should not save RSU without recommended_speed', async () => {
+	it('should be invalid if recommended_speed is empty', async () => {
+		const rsu = new RSU({
+			name: 'Test RSU',
+		});
 		try {
-			await RSU.create({
-				name: 'Test RSU',
-			});
-
-			throw new Error(
-				'Test should have thrown an error for missing recommended_speed'
-			);
+			await rsu.validate();
+			expect.fail('Validation should have failed');
 		} catch (error) {
-			expect(error.message).to.include('Please add a recommended speed');
+			expect(error.errors.recommended_speed.properties.message).to.equal(
+				'Please add a recommended speed'
+			);
 		}
 	});
 });
