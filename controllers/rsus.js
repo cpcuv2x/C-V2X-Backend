@@ -33,7 +33,10 @@ exports.getRSUs = async (req, res, next) => {
 					recommended_speed: 1,
 				},
 			},
-		]).sort({ name: 1 });
+			{
+				$sort: { name: 1 },
+			},
+		]);
 
 		return res
 			.status(200)
@@ -48,9 +51,20 @@ exports.getRSUs = async (req, res, next) => {
 //@access   Public
 exports.getRSUsList = async (req, res, next) => {
 	try {
-		const rsus = await RSU.find({}, { _id: 0, id: '$_id', name: 1 }).sort({
-			name: 1,
-		});
+		const rsus = await RSU.aggregate([
+			{
+				$project: {
+					_id: 0,
+					id: '$_id',
+					name: 1,
+				},
+			},
+			{
+				$sort: {
+					name: 1,
+				},
+			},
+		]);
 
 		return res
 			.status(200)
