@@ -32,10 +32,19 @@ exports.generateRequest = (body = {}, params = {}) => ({
 
 const generateSuccessResponse = (data) => {
 	if (Array.isArray(data)) {
+		const sortedData = data
+			.map((item) => {
+				if (!item.hasOwnProperty('name')) {
+					item.name = `${item.first_name} ${item.last_name}`.trim();
+				}
+				return item;
+			})
+			.sort((a, b) => a.name.localeCompare(b.name));
+
 		return {
 			success: true,
-			count: data.length,
-			data: data.sort((a, b) => a.name.localeCompare(b.name)),
+			count: sortedData.length,
+			data: sortedData,
 		};
 	}
 	return { success: true, data: data };
