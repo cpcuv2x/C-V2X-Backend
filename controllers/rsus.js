@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const RSU = require('../models/RSU');
+const { noSpaceRegex, numberRegex } = require('../utils/regex');
 
 //@desc     Get all RSUs
 //@route    PUT /api/rsus
@@ -95,7 +96,7 @@ exports.getRSU = async (req, res, next) => {
 
 		if (rsu.length === 0) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the RSU not found' });
 		}
 
@@ -110,6 +111,42 @@ exports.getRSU = async (req, res, next) => {
 //@access   Public
 exports.createRSU = async (req, res, next) => {
 	try {
+		const { name, recommended_speed } = req.body;
+
+		if (!name) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a name' });
+		}
+
+		if (!recommended_speed) {
+			return res.status(400).json({
+				success: false,
+				error: 'Please add a recommended speed',
+			});
+		}
+
+		if (!noSpaceRegex.test(name)) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Name should not contain spaces' });
+		}
+
+		if (!numberRegex.test(recommended_speed)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Recommended speed should be a valid number',
+			});
+		}
+
+		const existingRSU = await RSU.findOne({ name });
+		if (existingRSU) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name already exists',
+			});
+		}
+
 		const rsu = await RSU.create(req.body);
 
 		return res.status(201).json({
