@@ -33,6 +33,14 @@ const firstId = async () => {
 	const ids = await getCurrentData(Driver, ['id']);
 	return ids[0];
 };
+const retrieveDrivers = async () => {
+	return (await getCurrentData(Driver, DriverField)).map(
+		({ password, ...rest }) => ({
+			...rest,
+			name: `${rest.first_name} ${rest.last_name}`,
+		})
+	);
+};
 
 describe('Driver Controllers', () => {
 	beforeEach(async () => {
@@ -68,9 +76,7 @@ describe('Driver Controllers', () => {
 
 	describe('getDrivers', () => {
 		it('should return all Drivers, when there is no filter', async () => {
-			const expectedData = (await getCurrentData(Driver, DriverField)).map(
-				({ password, ...rest }) => rest
-			);
+			const expectedData = await retrieveDrivers();
 
 			await executeGetTest(
 				getDrivers,
@@ -80,9 +86,7 @@ describe('Driver Controllers', () => {
 		});
 
 		it('should return Drivers filtered by id, when there is a id filter', async () => {
-			const rawData = (await getCurrentData(Driver, DriverField)).map(
-				({ password, ...rest }) => rest
-			);
+			const rawData = await retrieveDrivers();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -93,9 +97,7 @@ describe('Driver Controllers', () => {
 		});
 
 		it('should return Drivers filtered by first_name, when there is a first_name filter', async () => {
-			const rawData = (await getCurrentData(Driver, DriverField)).map(
-				({ password, ...rest }) => rest
-			);
+			const rawData = await retrieveDrivers();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -106,9 +108,7 @@ describe('Driver Controllers', () => {
 		});
 
 		it('should return Drivers filtered by last_name, when there is a last_name filter', async () => {
-			const rawData = (await getCurrentData(Driver, DriverField)).map(
-				({ password, ...rest }) => rest
-			);
+			const rawData = await retrieveDrivers();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -119,9 +119,7 @@ describe('Driver Controllers', () => {
 		});
 
 		it('should return Drivers filtered by username, when there is a username filter', async () => {
-			const rawData = (await getCurrentData(Driver, DriverField)).map(
-				({ password, ...rest }) => rest
-			);
+			const rawData = await retrieveDrivers();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -132,9 +130,7 @@ describe('Driver Controllers', () => {
 		});
 
 		it('should return Drivers filtered by phone_no, when there is a phone_no filter', async () => {
-			const rawData = (await getCurrentData(Driver, DriverField)).map(
-				({ password, ...rest }) => rest
-			);
+			const rawData = await retrieveDrivers();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -145,9 +141,7 @@ describe('Driver Controllers', () => {
 		});
 
 		it('should return Drivers filtered by id & first_name & last_name & username & phone_no, when there are id & first_name & last_name & username & phone_no exist', async () => {
-			const rawData = (await getCurrentData(Driver, DriverField)).map(
-				({ password, ...rest }) => rest
-			);
+			const rawData = await retrieveDrivers();
 			const expectedData = [];
 
 			await executeGetTest(
@@ -164,7 +158,7 @@ describe('Driver Controllers', () => {
 		});
 
 		it('should return no driver filtered by id & first_name & last_name & username & phone_no, when there are id & first_name & last_name & username & phone_no not exist', async () => {
-			const rawData = await getCurrentData(Driver, DriverField);
+			const rawData = await retrieveDrivers();
 			const expectedData = [];
 
 			await executeGetTest(
@@ -209,11 +203,9 @@ describe('Driver Controllers', () => {
 
 	describe('getDriversList', () => {
 		it('should return all name of Drivers', async () => {
-			const expectedData = (
-				await getCurrentData(Driver, ['id', 'first_name', 'last_name'])
-			).map((driver) => ({
+			const expectedData = (await retrieveDrivers()).map((driver) => ({
 				id: driver.id,
-				name: `${driver.first_name} ${driver.last_name}`,
+				name: driver.name,
 			}));
 
 			await executeGetTest(
@@ -252,12 +244,7 @@ describe('Driver Controllers', () => {
 
 	describe('getDriver', () => {
 		it('should return a single driver by valid & exist ID', async () => {
-			const rawData = (await getCurrentData(Driver, DriverField)).map(
-				({ password, ...rest }) => ({
-					...rest,
-					name: `${rest.first_name} ${rest.last_name}`,
-				})
-			);
+			const rawData = await retrieveDrivers();
 			const expectedData = rawData[0];
 
 			await executeGetTest(
