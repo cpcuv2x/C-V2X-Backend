@@ -167,6 +167,29 @@ exports.createRSU = async (req, res, next) => {
 //@access   Public
 exports.updateRSU = async (req, res, next) => {
 	try {
+		const { name, recommended_speed } = req.body;
+
+		if (!noSpaceRegex.test(name)) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Name should not contain spaces' });
+		}
+
+		if (!numberRegex.test(recommended_speed)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Recommended speed should be a valid number',
+			});
+		}
+
+		const existingRSU = await RSU.findOne({ name: name });
+		if (existingRSU) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name already exists',
+			});
+		}
+
 		const rsu = await RSU.findByIdAndUpdate(req.params.id, req.body, {
 			new: true,
 			runValidators: true,
@@ -174,7 +197,7 @@ exports.updateRSU = async (req, res, next) => {
 
 		if (!rsu) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the RSU not found' });
 		}
 
@@ -182,8 +205,8 @@ exports.updateRSU = async (req, res, next) => {
 			success: true,
 			data: {
 				id: rsu._id,
-				name: rsu.name,
-				recommended_speed: rsu.recommended_speed,
+				name: name ?? rsu.name,
+				recommended_speed: recommended_speed ?? rsu.recommended_speed,
 			},
 		});
 	} catch (err) {
