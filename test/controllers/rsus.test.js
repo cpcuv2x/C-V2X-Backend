@@ -19,6 +19,14 @@ const {
 	executeDeleteTest,
 } = require('../../utils/test');
 
+const RSUField = ['id', 'name', 'recommended_speed'];
+const notExistId = { id: '123456789012345678901234' };
+const invalidId = { id: 'invalid' };
+const firstId = async () => {
+	const ids = await getCurrentData(RSU, ['id']);
+	return ids[0];
+};
+
 describe('RSU Controllers', () => {
 	beforeEach(async () => {
 		await RSU.create([
@@ -35,11 +43,7 @@ describe('RSU Controllers', () => {
 
 	describe('getRSUs', () => {
 		it('should return all RSUs, when there is no filter', async () => {
-			const expectedData = await getCurrentData(RSU, [
-				'id',
-				'name',
-				'recommended_speed',
-			]);
+			const expectedData = await getCurrentData(RSU, RSUField);
 
 			await executeGetTest(
 				getRSUs,
@@ -49,11 +53,7 @@ describe('RSU Controllers', () => {
 		});
 
 		it('should return RSUs filtered by id, when there is a id filter', async () => {
-			const rawData = await getCurrentData(RSU, [
-				'id',
-				'name',
-				'recommended_speed',
-			]);
+			const rawData = await getCurrentData(RSU, RSUField);
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -64,11 +64,7 @@ describe('RSU Controllers', () => {
 		});
 
 		it('should return RSUs filtered by name, when there is a name filter', async () => {
-			const rawData = await getCurrentData(RSU, [
-				'id',
-				'name',
-				'recommended_speed',
-			]);
+			const rawData = await getCurrentData(RSU, RSUField);
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -79,11 +75,7 @@ describe('RSU Controllers', () => {
 		});
 
 		it('should return RSUs filtered by speed, when there is a speed filter', async () => {
-			const rawData = await getCurrentData(RSU, [
-				'id',
-				'name',
-				'recommended_speed',
-			]);
+			const rawData = await getCurrentData(RSU, RSUField);
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -96,11 +88,7 @@ describe('RSU Controllers', () => {
 		});
 
 		it('should return RSUs filtered by id & name & speed, when there are id & name & speed filters exist', async () => {
-			const rawData = await getCurrentData(RSU, [
-				'id',
-				'name',
-				'recommended_speed',
-			]);
+			const rawData = await getCurrentData(RSU, RSUField);
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -115,11 +103,7 @@ describe('RSU Controllers', () => {
 		});
 
 		it('should return no RSU filtered by id & name & speed, when there are id & name & speed filters not exist', async () => {
-			const rawData = await getCurrentData(RSU, [
-				'id',
-				'name',
-				'recommended_speed',
-			]);
+			const rawData = await getCurrentData(RSU, RSUField);
 			const expectedData = [];
 
 			await executeGetTest(
@@ -200,11 +184,7 @@ describe('RSU Controllers', () => {
 
 	describe('getRSU', () => {
 		it('should return a single RSU by valid & exist ID', async () => {
-			const rawData = await getCurrentData(RSU, [
-				'id',
-				'name',
-				'recommended_speed',
-			]);
+			const rawData = await getCurrentData(RSU, RSUField);
 			const expectedData = rawData[0];
 
 			await executeGetTest(
@@ -219,7 +199,7 @@ describe('RSU Controllers', () => {
 
 			await executeGetTest(
 				getRSU,
-				generateRequest({}, { id: '123456789012345678901234' }),
+				generateRequest({}, notExistId),
 				generateFailResponse(message),
 				404
 			);
@@ -231,7 +211,7 @@ describe('RSU Controllers', () => {
 
 			await executeGetTest(
 				getRSU,
-				generateRequest({}, { id: 'invalid' }),
+				generateRequest({}, invalidId),
 				generateFailResponse(message),
 				400
 			);
@@ -263,7 +243,7 @@ describe('RSU Controllers', () => {
 			await executeCreateTest(
 				createRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
+				RSUField,
 				generateRequest(newRSU)
 			);
 		});
@@ -276,7 +256,7 @@ describe('RSU Controllers', () => {
 			await executeCreateTest(
 				createRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
+				RSUField,
 				generateRequest(newRSU),
 				400,
 				'Please add a name'
@@ -292,7 +272,7 @@ describe('RSU Controllers', () => {
 			await executeCreateTest(
 				createRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
+				RSUField,
 				generateRequest(newRSU),
 				400,
 				'Name should not contain spaces'
@@ -308,7 +288,7 @@ describe('RSU Controllers', () => {
 			await executeCreateTest(
 				createRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
+				RSUField,
 				generateRequest(newRSU),
 				400,
 				'Name already exists'
@@ -323,7 +303,7 @@ describe('RSU Controllers', () => {
 			await executeCreateTest(
 				createRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
+				RSUField,
 				generateRequest(newRSU),
 				400,
 				'Please add a recommended speed'
@@ -339,7 +319,7 @@ describe('RSU Controllers', () => {
 			await executeCreateTest(
 				createRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
+				RSUField,
 				generateRequest(newRSU),
 				400,
 				'Recommended speed should be a valid number'
@@ -357,7 +337,7 @@ describe('RSU Controllers', () => {
 			await executeCreateTest(
 				createRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
+				RSUField,
 				generateRequest(newRSU),
 				400,
 				message
@@ -370,7 +350,6 @@ describe('RSU Controllers', () => {
 
 	describe('updateRSU', () => {
 		it('should update the RSU, when request is valid', async () => {
-			const updatedId = (await getCurrentData(RSU, ['id']))[0];
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: '160',
@@ -379,13 +358,12 @@ describe('RSU Controllers', () => {
 			await executeUpdateTest(
 				updateRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest(updatedRequest, updatedId)
+				RSUField,
+				generateRequest(updatedRequest, await firstId())
 			);
 		});
 
 		it('should update the RSU, when name is missing', async () => {
-			const updatedId = (await getCurrentData(RSU, ['id']))[0];
 			const updatedRequest = {
 				recommended_speed: '160',
 			};
@@ -393,13 +371,12 @@ describe('RSU Controllers', () => {
 			await executeUpdateTest(
 				updateRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest(updatedRequest, updatedId)
+				RSUField,
+				generateRequest(updatedRequest, await firstId())
 			);
 		});
 
 		it('should update the RSU, when speed is missing', async () => {
-			const updatedId = (await getCurrentData(RSU, ['id']))[0];
 			const updatedRequest = {
 				name: 'RSU05',
 			};
@@ -407,13 +384,12 @@ describe('RSU Controllers', () => {
 			await executeUpdateTest(
 				updateRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest(updatedRequest, updatedId)
+				RSUField,
+				generateRequest(updatedRequest, await firstId())
 			);
 		});
 
 		it('should not update the RSU, when name is invalid', async () => {
-			const updatedId = (await getCurrentData(RSU, ['id']))[0];
 			const updatedRequest = {
 				name: 'RSU 5',
 				recommended_speed: '160',
@@ -422,15 +398,14 @@ describe('RSU Controllers', () => {
 			await executeUpdateTest(
 				updateRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest(updatedRequest, updatedId),
+				RSUField,
+				generateRequest(updatedRequest, await firstId()),
 				400,
 				'Name should not contain spaces'
 			);
 		});
 
 		it('should not create the RSU, when name is duplicated', async () => {
-			const updatedId = (await getCurrentData(RSU, ['id']))[0];
 			const updatedRequest = {
 				name: 'RSU01',
 				recommended_speed: '160',
@@ -439,15 +414,14 @@ describe('RSU Controllers', () => {
 			await executeUpdateTest(
 				updateRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest(updatedRequest, updatedId),
+				RSUField,
+				generateRequest(updatedRequest, await firstId()),
 				400,
 				'Name already exists'
 			);
 		});
 
 		it('should not update the RSU, when speed is invalid', async () => {
-			const updatedId = (await getCurrentData(RSU, ['id']))[0];
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: 'invalid',
@@ -456,15 +430,14 @@ describe('RSU Controllers', () => {
 			await executeUpdateTest(
 				updateRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest(updatedRequest, updatedId),
+				RSUField,
+				generateRequest(updatedRequest, await firstId()),
 				400,
 				'Recommended speed should be a valid number'
 			);
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const updatedId = { id: '123456789012345678901234' };
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: '160',
@@ -474,15 +447,14 @@ describe('RSU Controllers', () => {
 			await executeUpdateTest(
 				updateRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest(updatedRequest, updatedId),
+				RSUField,
+				generateRequest(updatedRequest, notExistId),
 				404,
 				message
 			);
 		});
 
 		it('should handle invalid ID and return 400 status', async () => {
-			const updatedId = { id: 'invalid' };
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: '160',
@@ -493,15 +465,14 @@ describe('RSU Controllers', () => {
 			await executeUpdateTest(
 				updateRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest(updatedRequest, updatedId),
+				RSUField,
+				generateRequest(updatedRequest, invalidId),
 				400,
 				message
 			);
 		});
 
 		it('should handle errors and return 400 status', async () => {
-			const updatedId = (await getCurrentData(RSU, ['id']))[0];
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: '160',
@@ -512,8 +483,8 @@ describe('RSU Controllers', () => {
 			await executeUpdateTest(
 				updateRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest(updatedRequest, updatedId),
+				RSUField,
+				generateRequest(updatedRequest, await firstId()),
 				400,
 				message
 			);
@@ -525,55 +496,50 @@ describe('RSU Controllers', () => {
 
 	describe('deleteRSU', () => {
 		it('should delete the RSU, when request is valid', async () => {
-			const deletedId = (await getCurrentData(RSU, ['id']))[0];
-
 			await executeDeleteTest(
 				deleteRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest({}, deletedId)
+				RSUField,
+				generateRequest({}, await firstId())
 			);
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const deletedId = { id: '123456789012345678901234' };
 			const message = 'the RSU not found';
 
 			await executeDeleteTest(
 				deleteRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest({}, deletedId),
+				RSUField,
+				generateRequest({}, notExistId),
 				404,
 				message
 			);
 		});
 
 		it('should handle invalid ID and return 400 status', async () => {
-			const deletedId = { id: 'invalid' };
 			const message =
 				'Cast to ObjectId failed for value "invalid" (type string) at path "_id" for model "RSU"';
 
 			await executeDeleteTest(
 				deleteRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest({}, deletedId),
+				RSUField,
+				generateRequest({}, invalidId),
 				400,
 				message
 			);
 		});
 
 		it('should handle errors and return 400 status', async () => {
-			const deletedId = (await getCurrentData(RSU, ['id']))[0];
 			const message = 'Error Message';
 			sinon.stub(RSU, 'findByIdAndDelete').throws(new Error(message));
 
 			await executeDeleteTest(
 				deleteRSU,
 				RSU,
-				['id', 'name', 'recommended_speed'],
-				generateRequest({}, deletedId),
+				RSUField,
+				generateRequest({}, await firstId()),
 				400,
 				message
 			);
