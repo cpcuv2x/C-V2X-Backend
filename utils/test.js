@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const mongoose = require('mongoose');
 const chai = require('chai');
 const expect = chai.expect;
 
@@ -8,21 +9,36 @@ const getCurrentData = async (entityModel, includeFields) => {
 	return data.map((item) => {
 		const mappedItem = {};
 		includeFields.forEach((field) => {
-			mappedItem[field] = field === 'id' ? item._id.toString() : item[field];
+			mappedItem[field] =
+				field === 'id' ? item._id.toString() : item[field].toString();
 		});
 		return mappedItem;
 	});
 };
 exports.getCurrentData = getCurrentData;
 
-const mapIdToString = (data) => {
-	if (Array.isArray(data)) {
-		return data.map((item) => ({
-			...item,
-			id: item.id?.toString(),
-		}));
+const mapPropToString = (res) => {
+	if (Array.isArray(res)) {
+		return res.map((item) => {
+			const mappedItem = {};
+			for (const key in item) {
+				if (Object.prototype.hasOwnProperty.call(item, key)) {
+					mappedItem[key] = item[key].toString();
+				}
+			}
+			return mappedItem;
+		});
 	}
-	return { ...data, id: data?.id?.toString() };
+	if (res.hasOwnProperty('data')) {
+		return { ...res, data: mapPropToString(res.data) };
+	}
+	const mappedRes = {};
+	for (const key in res) {
+		if (Object.prototype.hasOwnProperty.call(res, key)) {
+			mappedRes[key] = res[key].toString();
+		}
+	}
+	return mappedRes;
 };
 
 exports.generateRequest = (body = {}, params = {}) => ({
@@ -35,7 +51,7 @@ const generateSuccessResponse = (data) => {
 		const sortedData = data
 			.map((item) => {
 				if (!item.hasOwnProperty('name')) {
-					item.name = `${item.first_name} ${item.last_name}`.trim();
+					item.name = `${item.first_name} ${item.last_name}`;
 				}
 				return item;
 			})
@@ -73,7 +89,7 @@ const executeTest = async (
 
 	// Assert - response
 	const response = mockResponse.json.getCall(0).args[0];
-	assertionCallback(response, expectedResponse);
+	await assertionCallback(response, expectedResponse);
 
 	// Assert - status
 	const actualStatus = mockResponse.status.getCall(0).args[0];
@@ -86,14 +102,14 @@ exports.executeGetTest = async (
 	expectedResponse,
 	expectedStatus = 200
 ) => {
-	executeTest(
+	await executeTest(
 		controllerFunction,
 		requestBody,
 		expectedResponse,
 		expectedStatus,
-		(response, expected) => {
+		async (response, expected) => {
 			const actualResponse =
-				expectedStatus === 200 ? mapIdToString(response) : response;
+				expectedStatus === 200 ? mapPropToString(response) : response;
 			expect(actualResponse).to.deep.equal(expected);
 		}
 	);
@@ -117,13 +133,30 @@ exports.executeCreateTest = async (
 		async (response) => {
 			const afterData = await getCurrentData(entityModel, includeFields);
 			if (expectedStatus === 201) {
+				const createdItem = () => {
+					const item = afterData.find((item) => {
+						if (!item.hasOwnProperty('name')) {
+							return (
+								item.first_name === requestBody.body.first_name &&
+								item.last_name === requestBody.body.last_name
+							);
+						} else {
+							return item.name === requestBody.body.name;
+						}
+					});
+					if (item.hasOwnProperty('password')) {
+						const { password, ...rest } = item;
+						return {
+							...rest,
+							name: `${rest.first_name} ${rest.last_name}`,
+						};
+					}
+					return item;
+				};
 				expect(afterData.length).to.equal(beforeData.length + 1);
-				expect(afterData.find((item) => item.name === requestBody.body.name)).to
-					.exist;
-				expect(mapIdToString(response)).to.deep.equal(
-					generateSuccessResponse(
-						afterData.find((item) => item.name === requestBody.body.name)
-					)
+				expect(createdItem()).to.exist;
+				expect(mapPropToString(response)).to.deep.equal(
+					generateSuccessResponse(createdItem())
 				);
 			} else {
 				expect(afterData).to.deep.equal(beforeData);
@@ -151,14 +184,23 @@ exports.executeUpdateTest = async (
 		async (response) => {
 			const dataAfterUpdate = await getCurrentData(entityModel, includeFields);
 			if (expectedStatus === 200) {
+				const updatedItem = () => {
+					const item = dataAfterUpdate.find(
+						(item) => item.id.toString() === requestBody.params.id
+					);
+					if (item.hasOwnProperty('password')) {
+						const { password, ...rest } = item;
+						return {
+							...rest,
+							name: `${rest.first_name} ${rest.last_name}`,
+						};
+					}
+					return item;
+				};
 				expect(dataAfterUpdate.length).to.equal(dataBeforeUpdate.length);
-				expect(
-					dataAfterUpdate.find((item) => item.id === requestBody.params.id)
-				).to.exist;
-				expect(mapIdToString(response)).to.deep.equal(
-					generateSuccessResponse(
-						dataAfterUpdate.find((item) => item.id === requestBody.params.id)
-					)
+				expect(updatedItem()).to.exist;
+				expect(mapPropToString(response)).to.deep.equal(
+					generateSuccessResponse(updatedItem())
 				);
 			} else {
 				expect(dataAfterUpdate).to.deep.equal(dataBeforeUpdate);
