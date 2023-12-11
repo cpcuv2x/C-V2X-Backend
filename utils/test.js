@@ -1,7 +1,6 @@
 const sinon = require('sinon');
 const mongoose = require('mongoose');
 const chai = require('chai');
-const expect = chai.expect;
 
 const getCurrentData = async (entityModel, includeFields) => {
 	const data = await entityModel.find();
@@ -18,26 +17,25 @@ const getCurrentData = async (entityModel, includeFields) => {
 exports.getCurrentData = getCurrentData;
 
 const mapPropToString = (res) => {
-	if (Array.isArray(res)) {
-		return res.map((item) => {
-			const mappedItem = {};
-			for (const key in item) {
-				if (Object.prototype.hasOwnProperty.call(item, key)) {
-					mappedItem[key] = item[key].toString();
-				}
-			}
-			return mappedItem;
-		});
-	}
 	if (res.hasOwnProperty('data')) {
 		return { ...res, data: mapPropToString(res.data) };
 	}
-	const mappedRes = {};
-	for (const key in res) {
-		if (Object.prototype.hasOwnProperty.call(res, key)) {
-			mappedRes[key] = res[key].toString();
-		}
+	if (Array.isArray(res)) {
+		return res.map((item) => {
+			const mappedItem = {};
+			const objItem =
+				item instanceof mongoose.Document ? item.toObject() : item;
+			Object.keys(objItem).forEach((field) => {
+				mappedItem[field] = objItem[field].toString();
+			});
+			return mappedItem;
+		});
 	}
+	const mappedRes = {};
+	const objRes = res instanceof mongoose.Document ? res.toObject() : res;
+	Object.keys(objRes).forEach((field) => {
+		mappedRes[field] = objRes[field].toString();
+	});
 	return mappedRes;
 };
 
