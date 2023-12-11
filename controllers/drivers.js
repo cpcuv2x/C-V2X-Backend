@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Driver = require('../models/Driver');
+const { noSpaceRegex, passwordRegex, phoneNoRegex } = require('../utils/regex');
 
 //@desc     Get all drivers
 //@route    PUT /api/drivers
@@ -99,9 +100,9 @@ exports.getDriver = async (req, res, next) => {
 			},
 		]);
 
-		if (driver === 0) {
+		if (driver.length === 0) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the driver not found' });
 		}
 
@@ -116,6 +117,95 @@ exports.getDriver = async (req, res, next) => {
 //@access   Public
 exports.createDriver = async (req, res, next) => {
 	try {
+		const { first_name, last_name, username, password, phone_no } = req.body;
+
+		if (!first_name) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a first_name' });
+		}
+
+		if (!last_name) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a last_name' });
+		}
+
+		if (!username) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a username' });
+		}
+
+		if (!password) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a password' });
+		}
+
+		if (!phone_no) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a phone_no' });
+		}
+
+		if (!noSpaceRegex.test(first_name)) {
+			return res.status(400).json({
+				success: false,
+				error: 'First name should not contain spaces',
+			});
+		}
+
+		if (!noSpaceRegex.test(last_name)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Last name should not contain spaces',
+			});
+		}
+
+		const existingNameDriver = await Driver.findOne({
+			first_name: first_name,
+			last_name: last_name,
+		});
+		if (existingNameDriver) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name already exists',
+			});
+		}
+
+		if (!noSpaceRegex.test(username)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Username should not contain spaces',
+			});
+		}
+
+		const existingUsernameDriver = await Driver.findOne({
+			username: username,
+		});
+		if (existingUsernameDriver) {
+			return res.status(400).json({
+				success: false,
+				error: 'Username already exists',
+			});
+		}
+
+		if (!passwordRegex.test(password)) {
+			return res.status(400).json({
+				success: false,
+				error:
+					'Password should not contain spaces and should be at least 8 characters',
+			});
+		}
+
+		if (!phoneNoRegex.test(phone_no)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Phone Number should be xxx-xxx-xxxx format',
+			});
+		}
+
 		const driver = await Driver.create(req.body);
 
 		return res.status(201).json({
@@ -139,6 +229,65 @@ exports.createDriver = async (req, res, next) => {
 //@access   Public
 exports.updateDriver = async (req, res, next) => {
 	try {
+		const { first_name, last_name, username, password, phone_no } = req.body;
+
+		if (first_name && !noSpaceRegex.test(first_name)) {
+			return res.status(400).json({
+				success: false,
+				error: 'First name should not contain spaces',
+			});
+		}
+
+		if (last_name && !noSpaceRegex.test(last_name)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Last name should not contain spaces',
+			});
+		}
+
+		const existingNameDriver = await Driver.findOne({
+			first_name: first_name ?? '',
+			last_name: last_name ?? '',
+		});
+		if (existingNameDriver) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name already exists',
+			});
+		}
+
+		if (username && !noSpaceRegex.test(username)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Username should not contain spaces',
+			});
+		}
+
+		const existingUsernameDriver = await Driver.findOne({
+			username: username ?? '',
+		});
+		if (existingUsernameDriver) {
+			return res.status(400).json({
+				success: false,
+				error: 'Username already exists',
+			});
+		}
+
+		if (password && !passwordRegex.test(password)) {
+			return res.status(400).json({
+				success: false,
+				error:
+					'Password should not contain spaces and should be at least 8 characters',
+			});
+		}
+
+		if (phone_no && !phoneNoRegex.test(phone_no)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Phone Number should be xxx-xxx-xxxx format',
+			});
+		}
+
 		const driver = await Driver.findByIdAndUpdate(req.params.id, req.body, {
 			new: true,
 			runValidators: true,
@@ -146,7 +295,7 @@ exports.updateDriver = async (req, res, next) => {
 
 		if (!driver) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the driver not found' });
 		}
 
@@ -175,7 +324,7 @@ exports.deleteDriver = async (req, res, next) => {
 
 		if (!driver) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the driver not found' });
 		}
 
