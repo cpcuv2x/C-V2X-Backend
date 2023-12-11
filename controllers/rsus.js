@@ -34,10 +34,7 @@ exports.getRSUs = async (req, res, next) => {
 					recommended_speed: 1,
 				},
 			},
-			{
-				$sort: { name: 1 },
-			},
-		]);
+		]).sort({ name: 1 });
 
 		return res
 			.status(200)
@@ -60,12 +57,7 @@ exports.getRSUsList = async (req, res, next) => {
 					name: 1,
 				},
 			},
-			{
-				$sort: {
-					name: 1,
-				},
-			},
-		]);
+		]).sort({ name: 1 });
 
 		return res
 			.status(200)
