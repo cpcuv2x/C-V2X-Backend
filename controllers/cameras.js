@@ -113,7 +113,7 @@ exports.getCamera = async (req, res, next) => {
 
 		if (camera.length === 0) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the camera not found' });
 		}
 
