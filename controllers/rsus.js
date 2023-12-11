@@ -169,13 +169,13 @@ exports.updateRSU = async (req, res, next) => {
 	try {
 		const { name, recommended_speed } = req.body;
 
-		if (!noSpaceRegex.test(name)) {
+		if (name && !noSpaceRegex.test(name)) {
 			return res
 				.status(400)
 				.json({ success: false, error: 'Name should not contain spaces' });
 		}
 
-		if (!numberRegex.test(recommended_speed)) {
+		if (recommended_speed && !numberRegex.test(recommended_speed)) {
 			return res.status(400).json({
 				success: false,
 				error: 'Recommended speed should be a valid number',
@@ -223,7 +223,7 @@ exports.deleteRSU = async (req, res, next) => {
 
 		if (!rsu) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the RSU not found' });
 		}
 
