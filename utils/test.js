@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const mongoose = require('mongoose');
 const chai = require('chai');
+const expect = chai.expect;
 
 const getCurrentData = async (entityModel, includeFields) => {
 	const data = await entityModel.find();
