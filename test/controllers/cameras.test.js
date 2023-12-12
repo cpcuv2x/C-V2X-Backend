@@ -212,7 +212,7 @@ describe('Camera Controllers', () => {
 			);
 		});
 
-		it('should return no driver, when database is empty', async () => {
+		it('should return no camera, when database is empty', async () => {
 			await Camera.deleteMany({});
 			const expectedData = [];
 
