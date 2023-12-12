@@ -7,6 +7,7 @@ const {
 	deleteDriver,
 	updateDriver,
 } = require('../../controllers/drivers');
+const Car = require('../../models/Car');
 const Driver = require('../../models/Driver');
 const {
 	getCurrentData,
@@ -18,6 +19,7 @@ const {
 	executeUpdateTest,
 	executeDeleteTest,
 } = require('../../utils/test');
+const { expect } = require('chai');
 
 const DriverField = [
 	'id',
@@ -896,12 +898,39 @@ describe('Driver Controllers', () => {
 
 	describe('deleteDriver', () => {
 		it('should delete the driver, when request is valid', async () => {
+			const driverId = await firstId();
+			await Car.create(
+				{
+					name: 'Car01',
+					license_plate: 'LicensePlate01',
+					model: 'Model01',
+					driver_id: driverId.id,
+				},
+				{
+					name: 'Car02',
+					license_plate: 'LicensePlate02',
+					model: 'Model02',
+					driver_id: driverId.id,
+				},
+				{
+					name: 'Car03',
+					license_plate: 'LicensePlate03',
+					model: 'Model03',
+					driver_id: driverId.id,
+				}
+			);
+
 			await executeDeleteTest(
 				deleteDriver,
 				Driver,
 				DriverField,
-				generateRequest({}, await firstId())
+				generateRequest({}, driverId)
 			);
+
+			const cars = await Car.find();
+			expect(cars[0].driver_id).to.be.null;
+			expect(cars[1].driver_id).to.be.null;
+			expect(cars[2].driver_id).to.be.null;
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {

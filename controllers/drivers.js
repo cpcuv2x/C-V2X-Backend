@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Car = require('../models/Car');
 const Driver = require('../models/Driver');
 const { noSpaceRegex, passwordRegex, phoneNoRegex } = require('../utils/regex');
 
@@ -327,6 +328,11 @@ exports.deleteDriver = async (req, res, next) => {
 				.status(404)
 				.json({ success: false, error: 'the driver not found' });
 		}
+
+		await Car.updateMany(
+			{ driver_id: new mongoose.Types.ObjectId(req.params.id) },
+			{ $set: { driver_id: null } }
+		);
 
 		return res.status(200).json({ success: true, data: {} });
 	} catch (err) {
