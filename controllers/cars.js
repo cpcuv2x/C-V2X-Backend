@@ -245,13 +245,13 @@ exports.getCar = async (req, res, next) => {
 			},
 		]);
 
-		if (!car) {
+		if (car.length === 0) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the car not found' });
 		}
 
-		return res.status(200).json({ success: true, data: car });
+		return res.status(200).json({ success: true, data: car[0] });
 	} catch (err) {
 		return res.status(400).json({ success: false, error: err.message });
 	}
