@@ -52,6 +52,11 @@ const mockedCars = [
 		license_plate: 'LicensePlate03',
 		model: 'Model03',
 	},
+	{
+		name: 'Car04',
+		license_plate: 'LicensePlate04',
+		model: 'Model04',
+	},
 ];
 
 describe('Camera Controllers', () => {
@@ -287,6 +292,490 @@ describe('Camera Controllers', () => {
 
 			// Clean up
 			Camera.aggregate.restore();
+		});
+	});
+
+	describe('createCamera', () => {
+		it('should create the camera, when request is valid', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const newCamera = {
+				name: 'Camera04',
+				position: 'Back',
+				car_id: cars[3].id,
+			};
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera)
+			);
+		});
+
+		it('should not create the camera, when name is missing', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const newCamera = {
+				position: 'Back',
+				car_id: cars[3].id,
+			};
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera),
+				400,
+				'Please add a name'
+			);
+		});
+
+		it('should not create the camera, when car_id is missing', async () => {
+			const newCamera = {
+				name: 'Camera04',
+				position: 'Back',
+			};
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera),
+				400,
+				'Please add a car_id'
+			);
+		});
+
+		it('should not create the camera, when position is missing', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const newCamera = {
+				name: 'Camera04',
+				car_id: cars[3].id,
+			};
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera),
+				400,
+				'Please add a position'
+			);
+		});
+
+		it('should not create the camera, when name is invalid', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const newCamera = {
+				name: 'Camera 4',
+				position: 'Back',
+				car_id: cars[3].id,
+			};
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera),
+				400,
+				'Name should not contain spaces'
+			);
+		});
+
+		it('should not create the camera, when name is duplicated', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const newCamera = {
+				name: 'Camera01',
+				position: 'Back',
+				car_id: cars[3].id,
+			};
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera),
+				400,
+				'Name already exists'
+			);
+		});
+
+		it('should not create the camera, when car_id does not exist', async () => {
+			const newCamera = {
+				name: 'Camera04',
+				position: 'Back',
+				car_id: notExistId,
+			};
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera),
+				404,
+				'the car not found'
+			);
+		});
+
+		it('should not create the camera, when position is invalid', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const newCamera = {
+				name: 'Camera04',
+				position: 'invalid',
+				car_id: cars[3].id,
+			};
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera),
+				400,
+				'Position should be Front or Back'
+			);
+		});
+
+		it('should not create the camera, when position is duplicated', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const newCamera = {
+				name: 'Camera04',
+				position: 'Back',
+				car_id: cars[1].id,
+			};
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera),
+				400,
+				'Position of the car already exists'
+			);
+		});
+
+		it('should handle errors and return 400 status', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const newCamera = {
+				name: 'Camera04',
+				position: 'Back',
+				car_id: cars[3].id,
+			};
+			const message = 'Error Message';
+			sinon.stub(Camera, 'create').throws(new Error(message));
+
+			await executeCreateTest(
+				createCamera,
+				Camera,
+				CameraField,
+				generateRequest(newCamera),
+				400,
+				message
+			);
+
+			// Clean up
+			Camera.create.restore();
+		});
+	});
+
+	describe('updateCamera', () => {
+		it('should update the camera, when request is valid', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				name: 'Camera05',
+				position: 'Front',
+				car_id: cars[3].id,
+			};
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId())
+			);
+		});
+
+		it('should update the camera, when name is missing', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				position: 'Front',
+				car_id: cars[3].id,
+			};
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId())
+			);
+		});
+
+		it('should update the camera, when position is missing', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				name: 'Camera05',
+				car_id: cars[3].id,
+			};
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId())
+			);
+		});
+
+		it('should update the camera, when car_id is missing', async () => {
+			const updatedRequest = {
+				name: 'Camera05',
+				position: 'Front',
+			};
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId())
+			);
+		});
+
+		it('should not update the camera, when name is invalid', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				name: 'Camera 5',
+				position: 'Front',
+				car_id: cars[3].id,
+			};
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId()),
+				400,
+				'Name should not contain spaces'
+			);
+		});
+
+		it('should not update the camera, when car_id does not exist', async () => {
+			const updatedRequest = {
+				name: 'Camera05',
+				position: 'Front',
+				car_id: notExistId,
+			};
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId()),
+				404,
+				'the car not found'
+			);
+		});
+
+		it('should not update the camera, when position is invalid', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				name: 'Camera05',
+				position: 'invalid',
+				car_id: cars[3].id,
+			};
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId()),
+				400,
+				'Position should be Front or Back'
+			);
+		});
+
+		it('should update the camera, when name is duplicated', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				name: 'Camera01',
+				position: 'Front',
+				car_id: cars[3].id,
+			};
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId()),
+				400,
+				'Name already exists'
+			);
+		});
+
+		it('should update the camera, when position is duplicated', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				name: 'Camera05',
+				position: 'Front',
+				car_id: cars[0].id,
+			};
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId()),
+				400,
+				'Position of the car already exists'
+			);
+		});
+
+		it('should handle valid & not exist ID and return 404 status', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				name: 'Camera05',
+				position: 'Front',
+				car_id: cars[3].id,
+			};
+			const message = 'the camera not found';
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, notExistId),
+				404,
+				message
+			);
+		});
+
+		it('should handle invalid ID and return 400 status', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				name: 'Camera05',
+				position: 'Front',
+				car_id: cars[3].id,
+			};
+			const message =
+				'Cast to ObjectId failed for value "invalid" (type string) at path "_id" for model "Camera"';
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, invalidId),
+				400,
+				message
+			);
+		});
+
+		it('should handle errors and return 400 status', async () => {
+			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+			const updatedRequest = {
+				name: 'Camera05',
+				position: 'Front',
+				car_id: cars[3].id,
+			};
+			const message = 'Error Message';
+			sinon.stub(Camera, 'findByIdAndUpdate').throws(new Error(message));
+
+			await executeUpdateTest(
+				updateCamera,
+				Camera,
+				CameraField,
+				generateRequest(updatedRequest, await firstId()),
+				400,
+				message
+			);
+
+			// Clean up
+			Camera.findByIdAndUpdate.restore();
+		});
+	});
+
+	describe('deleteCamera', () => {
+		it('should delete the camera, when request is valid', async () => {
+			await executeDeleteTest(
+				deleteCamera,
+				Camera,
+				CameraField,
+				generateRequest({}, await firstId())
+			);
+		});
+
+		it('should handle valid & not exist ID and return 404 status', async () => {
+			const message = 'the camera not found';
+
+			await executeDeleteTest(
+				deleteCamera,
+				Camera,
+				CameraField,
+				generateRequest({}, notExistId),
+				404,
+				message
+			);
+		});
+
+		it('should handle invalid ID and return 400 status', async () => {
+			const message =
+				'Cast to ObjectId failed for value "invalid" (type string) at path "_id" for model "Camera"';
+
+			await executeDeleteTest(
+				deleteCamera,
+				Camera,
+				CameraField,
+				generateRequest({}, invalidId),
+				400,
+				message
+			);
+		});
+
+		it('should handle errors and return 400 status', async () => {
+			const message = 'Error Message';
+			sinon.stub(Camera, 'findByIdAndDelete').throws(new Error(message));
+
+			await executeDeleteTest(
+				deleteCamera,
+				Camera,
+				CameraField,
+				generateRequest({}, await firstId()),
+				400,
+				message
+			);
+
+			// Clean up
+			Camera.findByIdAndDelete.restore();
 		});
 	});
 });
