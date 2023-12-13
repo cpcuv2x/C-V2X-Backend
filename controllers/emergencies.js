@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Emergency = require('../models/Emergency');
 const Car = require('../models/Car');
+const { emergencyRegex } = require('../utils/regex');
 
 //@desc     Get all Emergencies
 //@route    GET /api/emergencies
@@ -28,7 +29,10 @@ exports.getEmergencies = async (req, res, next) => {
 				},
 			},
 			{
-				$unwind: '$driver_info',
+				$unwind: {
+					path: '$driver_info',
+					preserveNullAndEmptyArrays: true,
+				},
 			},
 			{
 				$project: {
@@ -36,7 +40,9 @@ exports.getEmergencies = async (req, res, next) => {
 					id: '$_id',
 					status: 1,
 					car_name: '$car_info.name',
-					driver_phone_no: '$driver_info.phone_no',
+					driver_phone_no: {
+						$ifNull: ['$driver_info.phone_no', ''],
+					},
 					time: {
 						$concat: [
 							{
@@ -72,20 +78,58 @@ exports.getEmergencies = async (req, res, next) => {
 //@access   Public
 exports.createEmergency = async (req, res, next) => {
 	try {
+		const { car_id, status, latitude, longitude } = req.body;
+
+		if (!car_id) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a car_id' });
+		}
+
 		const carExists = await Car.exists({
-			_id: new mongoose.Types.ObjectId(req.body.car_id),
+			_id: new mongoose.Types.ObjectId(car_id),
 		});
 
 		if (!carExists) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the car not found' });
 		}
 
+		if (status && !emergencyRegex.test(status)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Status should be pending, inProgress or complete',
+			});
+		}
+
+		if (latitude && typeof latitude !== 'number') {
+			return res.status(400).json({
+				success: false,
+				error: 'Latitude should be number',
+			});
+		}
+
+		if (longitude && typeof longitude !== 'number') {
+			return res.status(400).json({
+				success: false,
+				error: 'Longitude should be number',
+			});
+		}
+
 		const emergency = await Emergency.create(req.body);
-		return res.status(201).json({ success: true, data: emergency });
+		return res.status(201).json({
+			success: true,
+			data: {
+				id: emergency._id,
+				car_id: emergency.car_id,
+				status: emergency.status,
+				latitude: emergency.latitude,
+				longitude: emergency.longitude,
+			},
+		});
 	} catch (err) {
-		return res.status(500).json({ success: false, error: err.message });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -94,14 +138,39 @@ exports.createEmergency = async (req, res, next) => {
 //@access   Public
 exports.updateEmergency = async (req, res, next) => {
 	try {
-		if (
-			req.body.status !== 'pending' &&
-			req.body.status !== 'inProgress' &&
-			req.body.status !== 'complete'
-		) {
-			return res
-				.status(400)
-				.json({ success: false, error: 'the status not found' });
+		const { car_id, status, latitude, longitude } = req.body;
+
+		if (car_id) {
+			const carExists = await Car.exists({
+				_id: new mongoose.Types.ObjectId(car_id),
+			});
+
+			if (!carExists) {
+				return res
+					.status(404)
+					.json({ success: false, error: 'the car not found' });
+			}
+		}
+
+		if (status && !emergencyRegex.test(status)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Status should be pending, inProgress or complete',
+			});
+		}
+
+		if (latitude && typeof latitude !== 'number') {
+			return res.status(400).json({
+				success: false,
+				error: 'Latitude should be number',
+			});
+		}
+
+		if (longitude && typeof longitude !== 'number') {
+			return res.status(400).json({
+				success: false,
+				error: 'Longitude should be number',
+			});
 		}
 
 		const emergency = await Emergency.findByIdAndUpdate(
@@ -115,11 +184,20 @@ exports.updateEmergency = async (req, res, next) => {
 
 		if (!emergency) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the emergency not found' });
 		}
 
-		return res.status(200).json({ success: true, data: emergency });
+		return res.status(200).json({
+			success: true,
+			data: {
+				id: emergency._id,
+				car_id: car_id ?? emergency.car_id,
+				status: status ?? emergency.status,
+				latitude: latitude ?? emergency.latitude,
+				longitude: longitude ?? emergency.longitude,
+			},
+		});
 	} catch (err) {
 		return res.status(400).json({ success: false, error: err.message });
 	}
