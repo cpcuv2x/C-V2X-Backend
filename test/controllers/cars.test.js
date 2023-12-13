@@ -142,6 +142,7 @@ describe('Car Controllers', () => {
 		sinon.restore();
 		await Camera.deleteMany({});
 		await Driver.deleteMany({});
+		await Emergency.deleteMany({});
 		await Car.deleteMany({});
 	});
 
