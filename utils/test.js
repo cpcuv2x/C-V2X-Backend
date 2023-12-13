@@ -1,6 +1,7 @@
 const sinon = require('sinon');
 const mongoose = require('mongoose');
 const chai = require('chai');
+const { getCars } = require('../controllers/cars');
 const expect = chai.expect;
 
 const getCurrentData = async (entityModel, includeFields) => {
@@ -10,7 +11,11 @@ const getCurrentData = async (entityModel, includeFields) => {
 		const mappedItem = {};
 		includeFields.forEach((field) => {
 			mappedItem[field] =
-				field === 'id' ? item._id.toString() : item[field].toString();
+				field === 'id'
+					? item._id.toString()
+					: item[field]
+					? item[field].toString()
+					: item[field];
 		});
 		return mappedItem;
 	});
@@ -27,7 +32,11 @@ const mapPropToString = (res) => {
 			const objItem =
 				item instanceof mongoose.Document ? item.toObject() : item;
 			Object.keys(objItem).forEach((field) => {
-				mappedItem[field] = objItem[field].toString();
+				mappedItem[field] = Array.isArray(objItem[field])
+					? mapPropToString(objItem[field])
+					: objItem[field]
+					? objItem[field].toString()
+					: objItem[field];
 			});
 			return mappedItem;
 		});
@@ -35,7 +44,11 @@ const mapPropToString = (res) => {
 	const mappedRes = {};
 	const objRes = res instanceof mongoose.Document ? res.toObject() : res;
 	Object.keys(objRes).forEach((field) => {
-		mappedRes[field] = objRes[field].toString();
+		mappedRes[field] = Array.isArray(objRes[field])
+			? mapPropToString(objRes[field])
+			: objRes[field]
+			? objRes[field].toString()
+			: objRes[field];
 	});
 	return mappedRes;
 };
