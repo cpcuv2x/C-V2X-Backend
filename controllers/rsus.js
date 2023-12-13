@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const RSU = require('../models/RSU');
+const { noSpaceRegex, numberRegex } = require('../utils/regex');
 
 //@desc     Get all RSUs
 //@route    PUT /api/rsus
@@ -48,9 +49,15 @@ exports.getRSUs = async (req, res, next) => {
 //@access   Public
 exports.getRSUsList = async (req, res, next) => {
 	try {
-		const rsus = await RSU.find({}, { _id: 0, id: '$_id', name: 1 }).sort({
-			name: 1,
-		});
+		const rsus = await RSU.aggregate([
+			{
+				$project: {
+					_id: 0,
+					id: '$_id',
+					name: 1,
+				},
+			},
+		]).sort({ name: 1 });
 
 		return res
 			.status(200)
@@ -81,7 +88,7 @@ exports.getRSU = async (req, res, next) => {
 
 		if (rsu.length === 0) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the RSU not found' });
 		}
 
@@ -96,6 +103,42 @@ exports.getRSU = async (req, res, next) => {
 //@access   Public
 exports.createRSU = async (req, res, next) => {
 	try {
+		const { name, recommended_speed } = req.body;
+
+		if (!name) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a name' });
+		}
+
+		if (!recommended_speed) {
+			return res.status(400).json({
+				success: false,
+				error: 'Please add a recommended speed',
+			});
+		}
+
+		if (!noSpaceRegex.test(name)) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Name should not contain spaces' });
+		}
+
+		if (!numberRegex.test(recommended_speed)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Recommended speed should be a valid number',
+			});
+		}
+
+		const existingRSU = await RSU.findOne({ name });
+		if (existingRSU) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name already exists',
+			});
+		}
+
 		const rsu = await RSU.create(req.body);
 
 		return res.status(201).json({
@@ -116,6 +159,29 @@ exports.createRSU = async (req, res, next) => {
 //@access   Public
 exports.updateRSU = async (req, res, next) => {
 	try {
+		const { name, recommended_speed } = req.body;
+
+		if (name && !noSpaceRegex.test(name)) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Name should not contain spaces' });
+		}
+
+		if (recommended_speed && !numberRegex.test(recommended_speed)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Recommended speed should be a valid number',
+			});
+		}
+
+		const existingRSU = await RSU.findOne({ name: name });
+		if (existingRSU) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name already exists',
+			});
+		}
+
 		const rsu = await RSU.findByIdAndUpdate(req.params.id, req.body, {
 			new: true,
 			runValidators: true,
@@ -123,7 +189,7 @@ exports.updateRSU = async (req, res, next) => {
 
 		if (!rsu) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the RSU not found' });
 		}
 
@@ -131,8 +197,8 @@ exports.updateRSU = async (req, res, next) => {
 			success: true,
 			data: {
 				id: rsu._id,
-				name: rsu.name,
-				recommended_speed: rsu.recommended_speed,
+				name: name ?? rsu.name,
+				recommended_speed: recommended_speed ?? rsu.recommended_speed,
 			},
 		});
 	} catch (err) {
@@ -149,7 +215,7 @@ exports.deleteRSU = async (req, res, next) => {
 
 		if (!rsu) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the RSU not found' });
 		}
 

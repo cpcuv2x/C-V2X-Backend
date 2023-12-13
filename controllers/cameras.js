@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Camera = require('../models/Camera');
 const Car = require('../models/Car');
+const { noSpaceRegex, positionRegex } = require('../utils/regex');
 
 //@desc     Get all cameras
 //@route    PUT /api/cameras
@@ -113,7 +114,7 @@ exports.getCamera = async (req, res, next) => {
 
 		if (camera.length === 0) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the camera not found' });
 		}
 
@@ -128,20 +129,82 @@ exports.getCamera = async (req, res, next) => {
 //@access   Public
 exports.createCamera = async (req, res, next) => {
 	try {
-		const carExists = await Car.exists({
-			_id: new mongoose.Types.ObjectId(req.body.car_id),
-		});
+		const { name, position, car_id } = req.body;
 
-		if (!carExists) {
+		if (!name) {
 			return res
 				.status(400)
+				.json({ success: false, error: 'Please add a name' });
+		}
+
+		if (!car_id) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a car_id' });
+		}
+
+		if (!position) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Please add a position' });
+		}
+
+		if (!noSpaceRegex.test(name)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name should not contain spaces',
+			});
+		}
+
+		const nameExists = await Camera.findOne({
+			name: name,
+		});
+		if (nameExists) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name already exists',
+			});
+		}
+
+		const carExists = await Car.exists({
+			_id: new mongoose.Types.ObjectId(car_id),
+		});
+		if (!carExists) {
+			return res
+				.status(404)
 				.json({ success: false, error: 'the car not found' });
 		}
 
+		if (!positionRegex.test(position)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Position should be Front or Back',
+			});
+		}
+
+		const positionExists = await Camera.findOne({
+			position: position,
+			car_id: car_id,
+		});
+		if (positionExists) {
+			return res
+				.status(400)
+				.json({ success: false, error: 'Position of the car already exists' });
+		}
+
 		const camera = await Camera.create(req.body);
-		return res.status(201).json({ success: true, data: camera });
+
+		return res.status(201).json({
+			success: true,
+			data: {
+				id: camera.id,
+				name: camera.name,
+				position: camera.position,
+				car_id: camera.car_id,
+			},
+		});
 	} catch (err) {
-		return res.status(500).json({ success: false, error: err.message });
+		return res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -150,14 +213,52 @@ exports.createCamera = async (req, res, next) => {
 //@access   Public
 exports.updateCamera = async (req, res, next) => {
 	try {
-		const carExists = await Car.exists({
-			_id: new mongoose.Types.ObjectId(req.body.car_id),
-		});
+		const { name, position, car_id } = req.body;
 
-		if (!carExists) {
+		if (name && !noSpaceRegex.test(name)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name should not contain spaces',
+			});
+		}
+
+		if (car_id) {
+			const carExists = await Car.exists({
+				_id: new mongoose.Types.ObjectId(req.body.car_id),
+			});
+
+			if (!carExists) {
+				return res
+					.status(404)
+					.json({ success: false, error: 'the car not found' });
+			}
+		}
+
+		if (position && !positionRegex.test(position)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Position should be Front or Back',
+			});
+		}
+
+		const nameExists = await Camera.findOne({
+			name: name,
+		});
+		if (nameExists) {
+			return res.status(400).json({
+				success: false,
+				error: 'Name already exists',
+			});
+		}
+
+		const positionExists = await Camera.findOne({
+			position: position,
+			car_id: car_id,
+		});
+		if (positionExists) {
 			return res
 				.status(400)
-				.json({ success: false, error: 'the car not found' });
+				.json({ success: false, error: 'Position of the car already exists' });
 		}
 
 		const camera = await Camera.findByIdAndUpdate(req.params.id, req.body, {
@@ -167,11 +268,19 @@ exports.updateCamera = async (req, res, next) => {
 
 		if (!camera) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the camera not found' });
 		}
 
-		return res.status(200).json({ success: true, data: camera });
+		return res.status(200).json({
+			success: true,
+			data: {
+				id: camera.id,
+				name: name ?? camera.name,
+				position: position ?? camera.position,
+				car_id: car_id ?? camera.car_id,
+			},
+		});
 	} catch (err) {
 		return res.status(400).json({ success: false, error: err.message });
 	}
@@ -186,7 +295,7 @@ exports.deleteCamera = async (req, res, next) => {
 
 		if (!camera) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the camera not found' });
 		}
 

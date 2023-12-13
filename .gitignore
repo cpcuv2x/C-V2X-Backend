@@ -2,3 +2,6 @@
 node_modules/*
 # ignore config file
 config/config.env
+# ignore test coverage
+coverage/*
+.nyc_output/*
