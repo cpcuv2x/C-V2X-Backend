@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const Car = require('../models/Car');
 const Driver = require('../models/Driver');
+const Camera = require('../models/Camera');
+const { noSpaceRegex } = require('../utils/regex');
+const Emergency = require('../models/Emergency');
 
 //@desc     Get all cars
 //@route    PUT /api/cars
@@ -169,7 +172,7 @@ exports.getCars = async (req, res, next) => {
 			.status(200)
 			.json({ success: true, count: cars.length, data: cars });
 	} catch (err) {
-		res.status(400).json({ success: false });
+		res.status(400).json({ success: false, error: err.message });
 	}
 };
 
@@ -261,16 +264,47 @@ exports.getCar = async (req, res, next) => {
 //@route    POST /api/cars
 //@access   Public
 exports.createCar = async (req, res, next) => {
-	let carData;
+	const { name, license_plate, model, driver_id } = req.body;
 
-	if (req.body.driver_id && req.body.driver_id.length !== 0) {
+	if (!name) {
+		return res.status(400).json({ success: false, error: 'Please add a name' });
+	}
+
+	if (!license_plate) {
+		return res
+			.status(400)
+			.json({ success: false, error: 'Please add a license_plate' });
+	}
+
+	if (!model) {
+		return res
+			.status(400)
+			.json({ success: false, error: 'Please add a model' });
+	}
+
+	if (!noSpaceRegex.test(name)) {
+		return res.status(400).json({
+			success: false,
+			error: 'Name should not contain spaces',
+		});
+	}
+
+	const nameExists = await Car.findOne({ name: name });
+	if (nameExists) {
+		return res
+			.status(400)
+			.json({ success: false, error: 'Name already exists' });
+	}
+
+	let carData;
+	if (driver_id && driver_id.length !== 0) {
 		const driverExists = await Driver.exists({
-			_id: new mongoose.Types.ObjectId(req.body.driver_id),
+			_id: new mongoose.Types.ObjectId(driver_id),
 		});
 
 		if (!driverExists) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the driver not found' });
 		}
 
@@ -286,7 +320,16 @@ exports.createCar = async (req, res, next) => {
 	try {
 		const car = await Car.create(carData);
 
-		return res.status(201).json({ success: true, data: car });
+		return res.status(201).json({
+			success: true,
+			data: {
+				id: car._id,
+				name: car.name,
+				license_plate: car.license_plate,
+				model: car.model,
+				driver_id: car.driver_id,
+			},
+		});
 	} catch (err) {
 		return res.status(400).json({ success: false, error: err.message });
 	}
@@ -296,11 +339,26 @@ exports.createCar = async (req, res, next) => {
 //@route    PUT /api/cars/:id
 //@access   Public
 exports.updateCar = async (req, res, next) => {
-	let carData;
+	const { name, license_plate, model, driver_id } = req.body;
 
-	if (req.body.driver_id && req.body.driver_id.length !== 0) {
+	if (name && !noSpaceRegex.test(name)) {
+		return res.status(400).json({
+			success: false,
+			error: 'Name should not contain spaces',
+		});
+	}
+
+	const nameExists = await Car.findOne({ name: name });
+	if (nameExists) {
+		return res
+			.status(400)
+			.json({ success: false, error: 'Name already exists' });
+	}
+
+	let carData;
+	if (driver_id && driver_id.length !== 0) {
 		const driverExists = await Driver.exists({
-			_id: new mongoose.Types.ObjectId(req.body.driver_id),
+			_id: new mongoose.Types.ObjectId(driver_id),
 		});
 
 		if (!driverExists) {
@@ -327,11 +385,20 @@ exports.updateCar = async (req, res, next) => {
 
 		if (!car) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the car not found' });
 		}
 
-		return res.status(200).json({ success: true, data: car });
+		return res.status(200).json({
+			success: true,
+			data: {
+				id: car._id,
+				name: name ?? car.name,
+				license_plate: license_plate ?? car.license_plate,
+				model: model ?? car.model,
+				driver_id: driver_id ?? car.driver_id,
+			},
+		});
 	} catch (err) {
 		res.status(400).json({ success: false, error: err.message });
 	}
@@ -346,9 +413,12 @@ exports.deleteCar = async (req, res, next) => {
 
 		if (!car) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'the car not found' });
 		}
+
+		await Camera.deleteMany({ car_id: req.params.id });
+		await Emergency.deleteMany({ car_id: req.params.id });
 
 		return res.status(200).json({ success: true, data: {} });
 	} catch (err) {
