@@ -931,6 +931,9 @@ describe('Driver Controllers', () => {
 			expect(cars[0].driver_id).to.be.null;
 			expect(cars[1].driver_id).to.be.null;
 			expect(cars[2].driver_id).to.be.null;
+
+			// Clean up
+			await Car.deleteMany({});
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
