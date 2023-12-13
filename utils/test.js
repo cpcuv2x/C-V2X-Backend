@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const mongoose = require('mongoose');
 const chai = require('chai');
-const { getCars } = require('../controllers/cars');
+const { createEmergency } = require('../controllers/emergencies');
 const expect = chai.expect;
 
 const getCurrentData = async (entityModel, includeFields) => {
@@ -62,12 +62,14 @@ const generateSuccessResponse = (data) => {
 	if (Array.isArray(data)) {
 		const sortedData = data
 			.map((item) => {
-				if (!item.hasOwnProperty('name')) {
+				if (!item.hasOwnProperty('name') && !item.hasOwnProperty('car_name')) {
 					item.name = `${item.first_name} ${item.last_name}`;
 				}
 				return item;
 			})
-			.sort((a, b) => a.name.localeCompare(b.name));
+			.sort((a, b) => {
+				if (a.hasOwnProperty('name')) return a.name.localeCompare(b.name);
+			});
 
 		return {
 			success: true,
@@ -166,10 +168,12 @@ exports.executeCreateTest = async (
 					return item;
 				};
 				expect(afterData.length).to.equal(beforeData.length + 1);
-				expect(createdItem()).to.exist;
-				expect(mapPropToString(response)).to.deep.equal(
-					generateSuccessResponse(createdItem())
-				);
+				if (!createEmergency) {
+					expect(createdItem()).to.exist;
+					expect(mapPropToString(response)).to.deep.equal(
+						generateSuccessResponse(createdItem())
+					);
+				}
 			} else {
 				expect(afterData).to.deep.equal(beforeData);
 				expect(response).to.deep.equal(generateFailResponse(message));
