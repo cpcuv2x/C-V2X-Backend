@@ -407,7 +407,7 @@ describe('RSU Controllers', () => {
 
 		it('should not create the RSU, when name is duplicated', async () => {
 			const updatedRequest = {
-				name: 'RSU01',
+				name: 'RSU02',
 				recommended_speed: '160',
 			};
 

@@ -349,7 +349,7 @@ exports.updateCar = async (req, res, next) => {
 	}
 
 	const nameExists = await Car.findOne({ name: name });
-	if (nameExists) {
+	if (nameExists && nameExists._id.toString() !== req.params.id) {
 		return res
 			.status(400)
 			.json({ success: false, error: 'Name already exists' });

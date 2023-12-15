@@ -697,7 +697,7 @@ describe('Car Controllers', () => {
 				(a, b) => a.first_name.localeCompare(b.first_name)
 			);
 			const updatedRequest = {
-				name: 'Car01',
+				name: 'Car02',
 				license_plate: 'LicensePlate05',
 				model: 'Model05',
 				driver_id: drivers[0].id,
