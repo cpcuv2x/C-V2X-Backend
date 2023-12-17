@@ -53,22 +53,26 @@ module.exports = router;
  *     tags:
  *       - RSUs
  *     parameters:
- *       - in: body
- *         name: filter
- *         description: Optional filters for searching RSUs.
+ *       - in: query
+ *         name: id
+ *         description: Filter RSUs by ID.
  *         required: false
  *         schema:
- *           type: object
- *           properties:
- *             id:
- *               type: string
- *               description: Filter RSUs by ID.
- *             name:
- *               type: string
- *               description: Filter RSUs by name.
- *             recommended_speed:
- *               type: string
- *               description: Filter RSUs by recommended speed.
+ *           type: string
+ *       - in: query
+ *         name: name
+ *         description: Filter RSUs by name.
+ *         required: false
+ *         schema:
+ *           type: string
+ *         example: "RSU1"
+ *       - in: query
+ *         name: recommended_speed
+ *         description: Filter RSUs by recommended speed.
+ *         required: false
+ *         schema:
+ *           type: string
+ *         example: "50"
  *     responses:
  *       200:
  *         description: A list of RSUs based on the provided filters.
@@ -138,7 +142,6 @@ module.exports = router;
  *         description: ID of the RSU to retrieve
  *         schema:
  *           type: string
- *           example: 5fe5b4a27f6e4f001f4fcf79
  *     responses:
  *       200:
  *         description: Detailed information about the requested RSU.
@@ -174,13 +177,21 @@ module.exports = router;
  *     description: Create a new RSU with the provided information.
  *     tags:
  *       - RSUs
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           example:
- *             name: RSU1
- *             recommended_speed: "60"
+ *     parameters:
+ *       - in: query
+ *         name: name
+ *         required: true
+ *         description: Name of the RSU.
+ *         schema:
+ *           type: string
+ *         example: RSU1
+ *       - in: query
+ *         name: recommended_speed
+ *         required: true
+ *         description: Recommended speed of the RSU.
+ *         schema:
+ *           type: string
+ *         example: "60"
  *     responses:
  *       201:
  *         description: The newly created RSU.
