@@ -257,7 +257,7 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const message = 'the camera not found';
+			const message = 'The camera not found';
 
 			await executeGetTest(
 				getCamera,
@@ -421,7 +421,7 @@ describe('Camera Controllers', () => {
 				CameraField,
 				generateRequest(newCamera),
 				404,
-				'the car not found'
+				'The car not found'
 			);
 		});
 
@@ -591,7 +591,7 @@ describe('Camera Controllers', () => {
 				CameraField,
 				generateRequest(updatedRequest, await firstId()),
 				404,
-				'the car not found'
+				'The car not found'
 			);
 		});
 
@@ -664,7 +664,7 @@ describe('Camera Controllers', () => {
 				position: 'Front',
 				car_id: cars[3].id,
 			};
-			const message = 'the camera not found';
+			const message = 'The camera not found';
 
 			await executeUpdateTest(
 				updateCamera,
@@ -735,7 +735,7 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const message = 'the camera not found';
+			const message = 'The camera not found';
 
 			await executeDeleteTest(
 				deleteCamera,

@@ -115,7 +115,7 @@ exports.getCamera = async (req, res, next) => {
 		if (camera.length === 0) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the camera not found' });
+				.json({ success: false, error: 'The camera not found' });
 		}
 
 		return res.status(200).json({ success: true, data: camera[0] });
@@ -172,7 +172,7 @@ exports.createCamera = async (req, res, next) => {
 		if (!carExists) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the car not found' });
+				.json({ success: false, error: 'The car not found' });
 		}
 
 		if (!positionRegex.test(position)) {
@@ -230,7 +230,7 @@ exports.updateCamera = async (req, res, next) => {
 			if (!carExists) {
 				return res
 					.status(404)
-					.json({ success: false, error: 'the car not found' });
+					.json({ success: false, error: 'The car not found' });
 			}
 		}
 
@@ -269,7 +269,7 @@ exports.updateCamera = async (req, res, next) => {
 		if (!camera) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the camera not found' });
+				.json({ success: false, error: 'The camera not found' });
 		}
 
 		return res.status(200).json({
@@ -296,7 +296,7 @@ exports.deleteCamera = async (req, res, next) => {
 		if (!camera) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the camera not found' });
+				.json({ success: false, error: 'The camera not found' });
 		}
 
 		return res.status(200).json({ success: true, data: {} });
