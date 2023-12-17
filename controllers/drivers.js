@@ -104,7 +104,7 @@ exports.getDriver = async (req, res, next) => {
 		if (driver.length === 0) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the driver not found' });
+				.json({ success: false, error: 'The driver not found' });
 		}
 
 		return res.status(200).json({ success: true, data: driver[0] });
@@ -303,7 +303,7 @@ exports.updateDriver = async (req, res, next) => {
 		if (!driver) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the driver not found' });
+				.json({ success: false, error: 'The driver not found' });
 		}
 
 		return res.status(200).json({
@@ -332,7 +332,7 @@ exports.deleteDriver = async (req, res, next) => {
 		if (!driver) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the driver not found' });
+				.json({ success: false, error: 'The driver not found' });
 		}
 
 		await Car.updateMany(
