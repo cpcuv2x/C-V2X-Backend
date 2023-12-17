@@ -261,7 +261,7 @@ describe('Emergency Controllers', () => {
 				EmergencyField,
 				generateRequest(newEmergency),
 				404,
-				'the car not found'
+				'The car not found'
 			);
 		});
 
@@ -458,7 +458,7 @@ describe('Emergency Controllers', () => {
 				EmergencyField,
 				generateRequest(updatedRequest, await firstId()),
 				404,
-				'the car not found'
+				'The car not found'
 			);
 		});
 
@@ -534,7 +534,7 @@ describe('Emergency Controllers', () => {
 				latitude: 4,
 				longitude: 4,
 			};
-			const message = 'the emergency not found';
+			const message = 'The emergency not found';
 
 			await executeUpdateTest(
 				updateEmergency,
