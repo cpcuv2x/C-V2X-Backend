@@ -1,5 +1,6 @@
 # ignore all node_modules
-node_modules/*
+node_modules
+package-lock.json
 # ignore config file
 config/config.env
 # ignore test coverage
