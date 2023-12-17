@@ -251,7 +251,7 @@ exports.getCar = async (req, res, next) => {
 		if (car.length === 0) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the car not found' });
+				.json({ success: false, error: 'The car not found' });
 		}
 
 		return res.status(200).json({ success: true, data: car[0] });
@@ -305,7 +305,7 @@ exports.createCar = async (req, res, next) => {
 		if (!driverExists) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the driver not found' });
+				.json({ success: false, error: 'The driver not found' });
 		}
 
 		carData = req.body;
@@ -364,7 +364,7 @@ exports.updateCar = async (req, res, next) => {
 		if (!driverExists) {
 			return res
 				.status(400)
-				.json({ success: false, error: 'the driver not found' });
+				.json({ success: false, error: 'The driver not found' });
 		}
 
 		carData = req.body;
@@ -386,7 +386,7 @@ exports.updateCar = async (req, res, next) => {
 		if (!car) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the car not found' });
+				.json({ success: false, error: 'The car not found' });
 		}
 
 		return res.status(200).json({
@@ -414,7 +414,7 @@ exports.deleteCar = async (req, res, next) => {
 		if (!car) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the car not found' });
+				.json({ success: false, error: 'The car not found' });
 		}
 
 		await Camera.deleteMany({ car_id: req.params.id });

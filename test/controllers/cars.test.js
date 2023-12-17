@@ -366,7 +366,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const message = 'the car not found';
+			const message = 'The car not found';
 
 			await executeGetTest(
 				getCar,
@@ -555,7 +555,7 @@ describe('Car Controllers', () => {
 				CarField,
 				generateRequest(newCar),
 				404,
-				'the driver not found'
+				'The driver not found'
 			);
 		});
 
@@ -727,7 +727,7 @@ describe('Car Controllers', () => {
 				CarField,
 				generateRequest(updatedRequest, await firstId()),
 				400,
-				'the driver not found'
+				'The driver not found'
 			);
 		});
 
@@ -737,7 +737,7 @@ describe('Car Controllers', () => {
 				license_plate: 'LicensePlate05',
 				model: 'Model05',
 			};
-			const message = 'the car not found';
+			const message = 'The car not found';
 
 			await executeUpdateTest(
 				updateCar,
@@ -815,7 +815,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const message = 'the car not found';
+			const message = 'The car not found';
 
 			await executeDeleteTest(
 				deleteCar,

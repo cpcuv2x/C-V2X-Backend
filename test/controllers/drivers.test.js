@@ -257,7 +257,7 @@ describe('Driver Controllers', () => {
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const message = 'the driver not found';
+			const message = 'The driver not found';
 
 			await executeGetTest(
 				getDriver,
@@ -838,7 +838,7 @@ describe('Driver Controllers', () => {
 				password: 'Password05',
 				phone_no: '555-555-5555',
 			};
-			const message = 'the driver not found';
+			const message = 'The driver not found';
 
 			await executeUpdateTest(
 				updateDriver,
@@ -937,7 +937,7 @@ describe('Driver Controllers', () => {
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const message = 'the driver not found';
+			const message = 'The driver not found';
 
 			await executeDeleteTest(
 				deleteDriver,

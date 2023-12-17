@@ -89,7 +89,7 @@ exports.getRSU = async (req, res, next) => {
 		if (rsu.length === 0) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the RSU not found' });
+				.json({ success: false, error: 'The RSU not found' });
 		}
 
 		return res.status(200).json({ success: true, data: rsu[0] });
@@ -176,7 +176,6 @@ exports.updateRSU = async (req, res, next) => {
 
 		const existingRSU = await RSU.findOne({ name: name });
 		if (existingRSU && existingRSU._id.toString() !== req.params.id) {
-
 			return res.status(400).json({
 				success: false,
 				error: 'Name already exists',
@@ -191,7 +190,7 @@ exports.updateRSU = async (req, res, next) => {
 		if (!rsu) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the RSU not found' });
+				.json({ success: false, error: 'The RSU not found' });
 		}
 
 		return res.status(200).json({
@@ -217,7 +216,7 @@ exports.deleteRSU = async (req, res, next) => {
 		if (!rsu) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the RSU not found' });
+				.json({ success: false, error: 'The RSU not found' });
 		}
 
 		return res.status(200).json({ success: true, data: {} });

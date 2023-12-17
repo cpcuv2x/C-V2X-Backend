@@ -93,7 +93,7 @@ exports.createEmergency = async (req, res, next) => {
 		if (!carExists) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the car not found' });
+				.json({ success: false, error: 'The car not found' });
 		}
 
 		if (status && !emergencyRegex.test(status)) {
@@ -148,7 +148,7 @@ exports.updateEmergency = async (req, res, next) => {
 			if (!carExists) {
 				return res
 					.status(404)
-					.json({ success: false, error: 'the car not found' });
+					.json({ success: false, error: 'The car not found' });
 			}
 		}
 
@@ -185,7 +185,7 @@ exports.updateEmergency = async (req, res, next) => {
 		if (!emergency) {
 			return res
 				.status(404)
-				.json({ success: false, error: 'the emergency not found' });
+				.json({ success: false, error: 'The emergency not found' });
 		}
 
 		return res.status(200).json({
