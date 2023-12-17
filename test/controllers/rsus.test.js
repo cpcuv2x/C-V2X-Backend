@@ -195,7 +195,7 @@ describe('RSU Controllers', () => {
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const message = 'the RSU not found';
+			const message = 'The RSU not found';
 
 			await executeGetTest(
 				getRSU,
@@ -442,7 +442,7 @@ describe('RSU Controllers', () => {
 				name: 'RSU05',
 				recommended_speed: '160',
 			};
-			const message = 'the RSU not found';
+			const message = 'The RSU not found';
 
 			await executeUpdateTest(
 				updateRSU,
@@ -505,7 +505,7 @@ describe('RSU Controllers', () => {
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const message = 'the RSU not found';
+			const message = 'The RSU not found';
 
 			await executeDeleteTest(
 				deleteRSU,

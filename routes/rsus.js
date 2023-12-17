@@ -94,7 +94,7 @@ module.exports = router;
  *           application/json:
  *             example:
  *               success: false
- *               error: "Invalid request parameters."
+ *               error: "Invalid request parameters"
  */
 
 /**
@@ -124,7 +124,7 @@ module.exports = router;
  *           application/json:
  *             example:
  *               success: false
- *               error: "Invalid request parameters."
+ *               error: "Invalid request parameters"
  */
 
 /**
@@ -139,7 +139,7 @@ module.exports = router;
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the RSU to retrieve
+ *         description: The ID of the RSU to retrieve.
  *         schema:
  *           type: string
  *     responses:
@@ -159,14 +159,14 @@ module.exports = router;
  *           application/json:
  *             example:
  *               success: false
- *               error: "The RSU not found."
+ *               error: "The RSU not found"
  *       400:
  *         description: An error response if there's an issue with the request.
  *         content:
  *           application/json:
  *             example:
  *               success: false
- *               error: "Invalid request parameters."
+ *               error: "Invalid request parameters"
  */
 
 /**
@@ -209,13 +209,12 @@ module.exports = router;
  *           application/json:
  *             example:
  *               success: false
- *               error: "Invalid request parameters."
- *               details:
- *                 - "Please add a name."
- *                 - "Please add a recommended speed."
- *                 - "Name should not contain spaces."
- *                 - "Recommended speed should be a valid number."
- *                 - "Name already exists."
+ *               error:
+ *                 - "Please add a name"
+ *                 - "Please add a recommended speed"
+ *                 - "Name should not contain spaces"
+ *                 - "Recommended speed should be a valid number"
+ *                 - "Name already exists"
  */
 
 /**
@@ -230,7 +229,7 @@ module.exports = router;
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the RSU to update
+ *         description: The ID of the RSU to be updated.
  *         schema:
  *           type: string
  *     requestBody:
@@ -257,18 +256,17 @@ module.exports = router;
  *           application/json:
  *             example:
  *               success: false
- *               error: "Invalid request parameters."
- *               details:
- *                 - "Name should not contain spaces."
- *                 - "Recommended speed should be a valid number."
- *                 - "Name already exists."
+ *               error:
+ *                 - "Name should not contain spaces"
+ *                 - "Recommended speed should be a valid number"
+ *                 - "Name already exists"
  *       404:
  *         description: An error response if the RSU with the specified ID is not found.
  *         content:
  *           application/json:
  *             example:
  *               success: false
- *               error: "The RSU not found."
+ *               error: "The RSU not found"
  */
 
 /**
@@ -283,7 +281,7 @@ module.exports = router;
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the RSU to delete
+ *         description: The ID of the RSU to be deleted.
  *         schema:
  *           type: string
  *     responses:
@@ -300,5 +298,12 @@ module.exports = router;
  *           application/json:
  *             example:
  *               success: false
- *               error: "The RSU not found."
+ *               error: "The RSU not found"
+ *       '400':
+ *         description: An error response with details.
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: false
+ *               error: "Invalid request parameters"
  */
