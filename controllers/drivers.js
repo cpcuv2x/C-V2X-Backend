@@ -250,7 +250,10 @@ exports.updateDriver = async (req, res, next) => {
 			first_name: first_name ?? '',
 			last_name: last_name ?? '',
 		});
-		if (existingNameDriver) {
+		if (
+			existingNameDriver &&
+			existingNameDriver._id.toString() !== req.params.id
+		) {
 			return res.status(400).json({
 				success: false,
 				error: 'Name already exists',
@@ -267,7 +270,10 @@ exports.updateDriver = async (req, res, next) => {
 		const existingUsernameDriver = await Driver.findOne({
 			username: username ?? '',
 		});
-		if (existingUsernameDriver) {
+		if (
+			existingUsernameDriver &&
+			existingUsernameDriver._id.toString() !== req.params.id
+		) {
 			return res.status(400).json({
 				success: false,
 				error: 'Username already exists',

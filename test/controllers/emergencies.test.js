@@ -75,9 +75,10 @@ describe('Emergency Controllers', () => {
 		);
 
 		const currentTime = new Date(Date.now());
-		const hours = (currentTime.getHours() - 7) % 12 || 12;
+		const hours = (currentTime.getHours() + 17) % 24;
 		const minutes = currentTime.getMinutes();
-		const period = currentTime.getHours() - 7 < 12 ? 'am' : 'pm';
+		const period = (currentTime.getHours() + 17) % 24 < 12 ? 'am' : 'pm';
+
 		createdTime = `${hours < 10 ? '0' + hours : hours}:${
 			minutes < 10 ? '0' : ''
 		}${minutes} ${period}`;
