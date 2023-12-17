@@ -176,6 +176,7 @@ exports.updateRSU = async (req, res, next) => {
 
 		const existingRSU = await RSU.findOne({ name: name });
 		if (existingRSU && existingRSU._id.toString() !== req.params.id) {
+
 			return res.status(400).json({
 				success: false,
 				error: 'Name already exists',
