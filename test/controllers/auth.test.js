@@ -151,8 +151,8 @@ describe('Auth Controllers', () => {
 		const actualStatus = mockResponse.status.getCall(0).args[0];
 		expect(actualStatus).to.deep.equal(400);
 	});
-
-	it('should log the user out and clear the cookie', async () => {
+  
+  it('should log the user out and clear the cookie', async () => {
 		// Action
 		const mockResponse = {
 			status: sinon.stub().returnsThis(),
