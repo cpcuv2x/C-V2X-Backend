@@ -9,14 +9,6 @@ const DriverSchema = new mongoose.Schema({
 		type: String,
 		required: [true, 'Please add a last name'],
 	},
-	username: {
-		type: String,
-		required: [true, 'Please add a username'],
-	},
-	password: {
-		type: String,
-		required: [true, 'Please add a password'],
-	},
 	phone_no: {
 		type: String,
 		required: [true, 'Please add a phone number'],
