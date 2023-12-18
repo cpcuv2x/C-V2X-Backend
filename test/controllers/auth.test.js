@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const { login } = require('../../controllers/auth');
+const { login, logout } = require('../../controllers/auth');
 const User = require('../../models/User');
 const { generateRequest } = require('../../utils/test');
 const chai = require('chai');
@@ -150,5 +150,30 @@ describe('Auth Controllers', () => {
 		// Assert - status
 		const actualStatus = mockResponse.status.getCall(0).args[0];
 		expect(actualStatus).to.deep.equal(400);
+	});
+  
+  it('should log the user out and clear the cookie', async () => {
+		// Action
+		const mockResponse = {
+			status: sinon.stub().returnsThis(),
+			json: sinon.spy(),
+			cookie: sinon.spy(),
+		};
+		await logout({}, mockResponse);
+
+		// Assert
+		const response = mockResponse.json.getCall(0).args[0];
+		expect(response).to.deep.equal({
+			success: true,
+			data: {},
+		});
+
+		// Assert
+		const actualCookie = mockResponse.cookie.getCall(0).args[0];
+		expect(actualCookie.token).to.be.undefined;
+
+		// Assert - status
+		const actualStatus = mockResponse.status.getCall(0).args[0];
+		expect(actualStatus).to.deep.equal(200);
 	});
 });
