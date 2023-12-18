@@ -45,3 +45,18 @@ exports.login = async (req, res, next) => {
 		token,
 	});
 };
+
+//@desc Log user out / clear cookie
+//@route GET /api/auth/logout
+//@access Private
+exports.logout = async (req, res, next) => {
+	res.cookie('token', 'none', {
+		expires: new Date(Date.now() + 10 * 1000),
+		httpOnly: true,
+	});
+
+	return res.status(200).json({
+		success: true,
+		data: {},
+	});
+};
