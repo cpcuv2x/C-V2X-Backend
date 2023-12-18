@@ -9,7 +9,7 @@ exports.login = async (req, res, next) => {
 	if (!username || !password) {
 		return res.status(400).json({
 			success: false,
-			msg: 'Please provide an username and password',
+			error: 'Please provide an username and password',
 		});
 	}
 
@@ -17,7 +17,7 @@ exports.login = async (req, res, next) => {
 	if (!user) {
 		return res.status(400).json({
 			success: false,
-			msg: 'Invalid credentials',
+			error: 'Invalid credentials',
 		});
 	}
 
@@ -25,7 +25,7 @@ exports.login = async (req, res, next) => {
 	if (!isMatch) {
 		return res.status(401).json({
 			success: false,
-			msg: 'Invalid credentials',
+			error: 'Invalid credentials',
 		});
 	}
 
@@ -36,13 +36,11 @@ exports.login = async (req, res, next) => {
 			Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
 		),
 		httpOnly: true,
+		secure: true,
 	};
 
-	if (process.env.NODE_ENV === 'production') {
-		options.secure = true;
-	}
-
-	res.status(200).cookie('token', token, options).json({
+	res.cookie('token', token, options);
+	return res.status(200).json({
 		success: true,
 		token,
 	});

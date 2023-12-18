@@ -110,6 +110,7 @@ const executeTest = async (
 	const actualStatus = mockResponse.status.getCall(0).args[0];
 	expect(actualStatus).to.deep.equal(expectedStatus);
 };
+exports.executeTest = executeTest;
 
 exports.executeGetTest = async (
 	controllerFunction,
