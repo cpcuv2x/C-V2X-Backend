@@ -52,27 +52,22 @@ module.exports = router;
  *     description: Get RSUs based on optional filters such as ID, name, and recommended speed.
  *     tags:
  *       - RSUs
- *     parameters:
- *       - in: query
- *         name: id
- *         description: Filter RSUs by ID.
- *         required: false
- *         schema:
- *           type: string
- *       - in: query
- *         name: name
- *         description: Filter RSUs by name.
- *         required: false
- *         schema:
- *           type: string
- *         example: "RSU1"
- *       - in: query
- *         name: recommended_speed
- *         description: Filter RSUs by recommended speed.
- *         required: false
- *         schema:
- *           type: string
- *         example: "50"
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           example:
+ *             id: "123"
+ *             name: "RSU1"
+ *             recommended_speed: "50"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               recommended_speed:
+ *                 type: string
  *     responses:
  *       200:
  *         description: A list of RSUs based on the provided filters.
@@ -177,21 +172,23 @@ module.exports = router;
  *     description: Create a new RSU with the provided information.
  *     tags:
  *       - RSUs
- *     parameters:
- *       - in: query
- *         name: name
- *         required: true
- *         description: Name of the RSU.
- *         schema:
- *           type: string
- *         example: RSU1
- *       - in: query
- *         name: recommended_speed
- *         required: true
- *         description: Recommended speed of the RSU.
- *         schema:
- *           type: string
- *         example: "60"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             name: "RSU1"
+ *             recommended_speed: "60"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               recommended_speed:
+ *                 type: string
+ *             required:
+ *               - name
+ *               - recommended_speed
  *     responses:
  *       201:
  *         description: The newly created RSU.
@@ -233,12 +230,18 @@ module.exports = router;
  *         schema:
  *           type: string
  *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           example:
- *             name: UpdatedRSU
- *             recommended_speed: "75"
+ *             name: "RSU1"
+ *             recommended_speed: "60"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               recommended_speed:
+ *                 type: string
  *     responses:
  *       200:
  *         description: The updated RSU.

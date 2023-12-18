@@ -72,26 +72,28 @@ module.exports = router;
  *     description: Retrieve a list of drivers based on specified filters.
  *     tags:
  *       - Drivers
- *     parameters:
- *       - in: query
- *         name: id
- *         description: Filter drivers by ID.
- *       - in: query
- *         name: first_name
- *         example: "John"
- *         description: Filter drivers by first name.
- *       - in: query
- *         name: last_name
- *         example: "Doe"
- *         description: Filter drivers by last name.
- *       - in: query
- *         name: phone_no
- *         example: "123-456-7890"
- *         description: Filter drivers by phone number.
- *       - in: query
- *         name: username
- *         example: "johndoe"
- *         description: Filter drivers by username.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           example:
+ *             id: "609e44902136d23c14ab8db1"
+ *             first_name: "John"
+ *             last_name: "Doe"
+ *             phone_no: "123-456-7890"
+ *             username: "johndoe"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               first_name:
+ *                 type: string
+ *               last_name:
+ *                 type: string
+ *               phone_no:
+ *                 type: string
+ *               username:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: A list of drivers based on the specified filters.

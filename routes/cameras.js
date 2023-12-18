@@ -53,29 +53,25 @@ module.exports = router;
  *     description: Retrieve a list of all cameras with optional filters.
  *     tags:
  *       - Cameras
- *     parameters:
- *       - in: query
- *         name: id
- *         schema:
- *           type: string
- *         description: Filter cameras by ID.
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Filter cameras by name.
- *         example: "Camera1"
- *       - in: query
- *         name: position
- *         schema:
- *           type: string
- *         description: Filter cameras by position.
- *         example: "Front"
- *       - in: query
- *         name: car_id
- *         schema:
- *           type: string
- *         description: Filter cameras by car ID.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           example:
+ *             id: "5fe5b4a27f6e4f001f4fcf81"
+ *             name: "Camera1"
+ *             position: "Front"
+ *             car_id: "5fe5b4a27f6e4f001f4fcf79"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               position:
+ *                 type: string
+ *               car_id:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: A list of cameras based on the provided filters.
@@ -186,22 +182,27 @@ module.exports = router;
  *     description: Create a new camera with the provided information.
  *     tags:
  *       - Cameras
- *     parameters:
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: The name of the camera.
- *       - in: query
- *         name: position
- *         schema:
- *           type: string
- *         description: The position of the camera (Front or Back).
- *       - in: query
- *         name: car_id
- *         schema:
- *           type: string
- *         description: The unique identifier of the car associated with the camera.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             name: "Camera1"
+ *             position: "Front"
+ *             car_id: "5fe5b4a27f6e4f001f4fcf79"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               position:
+ *                 type: string
+ *               car_id:
+ *                 type: string
+ *             required:
+ *               - name
+ *               - position
+ *               - car_id
  *     responses:
  *       '201':
  *         description: Details of the created camera.
@@ -252,23 +253,22 @@ module.exports = router;
  *           type: string
  *         required: true
  *         description: The ID of the camera to be updated.
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: The updated name of the camera.
- *         example: "UpdatedCamera"
- *       - in: query
- *         name: position
- *         schema:
- *           type: string
- *         description: The updated position of the camera (Front or Back).
- *         example: "Back"
- *       - in: query
- *         name: car_id
- *         schema:
- *           type: string
- *         description: The updated unique identifier of the car associated with the camera.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           example:
+ *             name: "Camera1"
+ *             position: "Front"
+ *             car_id: "5fe5b4a27f6e4f001f4fcf79"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               position:
+ *                 type: string
+ *               car_id:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: Details of the updated camera.

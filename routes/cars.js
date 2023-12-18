@@ -56,45 +56,34 @@ module.exports = router;
  *     description: Retrieve a list of all cars with optional filters.
  *     tags:
  *       - Cars
- *     parameters:
- *       - in: query
- *         name: id
- *         schema:
- *           type: string
- *         description: Filter cars by ID.
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Filter cars by name.
- *         example: "Car1"
- *       - in: query
- *         name: license_plate
- *         schema:
- *           type: string
- *         description: Filter cars by license plate.
- *         example: "ABC123"
- *       - in: query
- *         name: model
- *         schema:
- *           type: string
- *         description: Filter cars by model.
- *         example: "Model1"
- *       - in: query
- *         name: driver_id
- *         schema:
- *           type: string
- *         description: Filter cars by driver ID.
- *       - in: query
- *         name: front_cam_id
- *         schema:
- *           type: string
- *         description: Filter cars by front camera ID.
- *       - in: query
- *         name: back_cam_id
- *         schema:
- *           type: string
- *         description: Filter cars by back camera ID.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           example:
+ *             id: "5fe5b4a27f6e4f001f4fcf79"
+ *             name: "Car1"
+ *             license_plate: "ABC123"
+ *             model: "Model1"
+ *             driver_id: "5fe5b4a27f6e4f001f4fcf80"
+ *             front_cam_id: "5fe5b4a27f6e4f001f4fcf81"
+ *             back_cam_id: "5fe5b4a27f6e4f001f4fcf82"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               license_plate:
+ *                 type: string
+ *               model:
+ *                 type: string
+ *               driver_id:
+ *                 type: string
+ *               front_cam_id:
+ *                 type: string
+ *               back_cam_id:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: A list of cars based on the provided filters.
@@ -229,30 +218,30 @@ module.exports = router;
  *     description: Create a new car with the provided information.
  *     tags:
  *       - Cars
- *     parameters:
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Name of the car.
- *         example: Car1
- *       - in: query
- *         name: license_plate
- *         schema:
- *           type: string
- *         description: License plate of the car.
- *         example: ABC123
- *       - in: query
- *         name: model
- *         schema:
- *           type: string
- *         description: Model of the car.
- *         example: Model1
- *       - in: query
- *         name: driver_id
- *         schema:
- *           type: string
- *         description: ID of the driver associated with the car.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             name: "Car1"
+ *             license_plate: "ABC123"
+ *             model: "Model1"
+ *             driver_id: "5fe5b4a27f6e4f001f4fcf80"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               license_plate:
+ *                 type: string
+ *               model:
+ *                 type: string
+ *               driver_id:
+ *                 type: string
+ *             required:
+ *               - name
+ *               - license_plate
+ *               - model
  *     responses:
  *       '201':
  *         description: Details of the created car.
@@ -302,29 +291,25 @@ module.exports = router;
  *         description: The ID of the car to be updated.
  *         schema:
  *           type: string
- *       - in: query
- *         name: name
- *         schema:
- *           type: string
- *         description: Updated name of the car.
- *         example: UpdatedCar1
- *       - in: query
- *         name: license_plate
- *         schema:
- *           type: string
- *         description: Updated license plate of the car.
- *         example: UpdatedABC123
- *       - in: query
- *         name: model
- *         schema:
- *           type: string
- *         description: Updated model of the car.
- *         example: UpdatedModel1
- *       - in: query
- *         name: driver_id
- *         schema:
- *           type: string
- *         description: Updated driver ID associated with the car.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           example:
+ *             name: "Car1"
+ *             license_plate: "ABC123"
+ *             model: "Model1"
+ *             driver_id: "5fe5b4a27f6e4f001f4fcf80"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               license_plate:
+ *                 type: string
+ *               model:
+ *                 type: string
+ *               driver_id:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: Details of the updated car.
