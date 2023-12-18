@@ -30,15 +30,11 @@ const mockedDriver = [
 	{
 		first_name: 'Somchai01',
 		last_name: 'KonDee01',
-		username: 'Username01',
-		password: 'Password01',
 		phone_no: '111-111-1111',
 	},
 	{
 		first_name: 'Somchai02',
 		last_name: 'KonDee02',
-		username: 'Username02',
-		password: 'Password02',
 		phone_no: '222-222-2222',
 	},
 ];

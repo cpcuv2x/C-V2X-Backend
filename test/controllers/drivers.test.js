@@ -8,6 +8,7 @@ const {
 	updateDriver,
 } = require('../../controllers/drivers');
 const Car = require('../../models/Car');
+const User = require('../../models/User');
 const Driver = require('../../models/Driver');
 const {
 	getCurrentData,
@@ -36,10 +37,12 @@ const firstId = async () => {
 	return ids[0];
 };
 const retrieveDrivers = async () => {
+	const users = await getCurrentData(User, ['username', 'driver_id']);
 	return (await getCurrentData(Driver, DriverField)).map(
 		({ password, ...rest }) => ({
 			...rest,
 			name: `${rest.first_name} ${rest.last_name}`,
+			username: users.filter((user) => user.driver_id === rest.id)[0].username,
 		})
 	);
 };
@@ -50,29 +53,44 @@ describe('Driver Controllers', () => {
 			{
 				first_name: 'Somchai01',
 				last_name: 'KonDee01',
-				username: 'Username01',
-				password: 'Password01',
 				phone_no: '111-111-1111',
 			},
 			{
 				first_name: 'Somchai02',
 				last_name: 'KonDee02',
-				username: 'Username02',
-				password: 'Password02',
 				phone_no: '222-222-2222',
 			},
 			{
 				first_name: 'Somchai03',
 				last_name: 'KonDee03',
+				phone_no: '333-333-3333',
+			},
+		]);
+		const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
+			(a, b) => a.first_name.localeCompare(b.first_name)
+		);
+		await User.create([
+			{
+				username: 'Username01',
+				password: 'Password01',
+				driver_id: drivers[0].id,
+			},
+			{
+				username: 'Username02',
+				password: 'Password02',
+				driver_id: drivers[1].id,
+			},
+			{
 				username: 'Username03',
 				password: 'Password03',
-				phone_no: '333-333-3333',
+				driver_id: drivers[2].id,
 			},
 		]);
 	});
 
 	afterEach(async () => {
 		sinon.restore();
+		await User.deleteMany({});
 		await Driver.deleteMany({});
 	});
 
@@ -880,7 +898,7 @@ describe('Driver Controllers', () => {
 				phone_no: '555-555-5555',
 			};
 			const message = 'Error Message';
-			sinon.stub(Driver, 'findByIdAndUpdate').throws(new Error(message));
+			sinon.stub(Driver, 'findOneAndUpdate').throws(new Error(message));
 
 			await executeUpdateTest(
 				updateDriver,
@@ -892,7 +910,7 @@ describe('Driver Controllers', () => {
 			);
 
 			// Clean up
-			Driver.findByIdAndUpdate.restore();
+			Driver.findOneAndUpdate.restore();
 		});
 	});
 

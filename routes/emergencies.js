@@ -7,7 +7,12 @@ const {
 
 const router = express.Router();
 
-router.route('/').get(getEmergencies).post(createEmergency);
+const { protect, authorize } = require('../middleware/auth');
+
+router
+	.route('/')
+	.get(getEmergencies)
+	.post(protect, authorize('driver'), createEmergency);
 router.route('/:id').put(updateEmergency);
 
 module.exports = router;
