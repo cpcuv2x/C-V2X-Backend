@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Car = require('../models/Car');
+const User = require('../models/User');
 const Driver = require('../models/Driver');
 const { noSpaceRegex, passwordRegex, phoneNoRegex } = require('../utils/regex');
 
@@ -10,8 +11,17 @@ exports.getDrivers = async (req, res, next) => {
 	try {
 		const drivers = await Driver.aggregate([
 			{
+				$lookup: {
+					from: 'users',
+					localField: '_id',
+					foreignField: 'driver_id',
+					as: 'userDetails',
+				},
+			},
+			{
 				$addFields: {
 					tempId: { $toString: '$_id' },
+					username: { $arrayElemAt: ['$userDetails.username', 0] },
 				},
 			},
 			{
@@ -89,6 +99,14 @@ exports.getDriver = async (req, res, next) => {
 				$match: { _id: new mongoose.Types.ObjectId(req.params.id) },
 			},
 			{
+				$lookup: {
+					from: 'users',
+					localField: '_id',
+					foreignField: 'driver_id',
+					as: 'userDetails',
+				},
+			},
+			{
 				$project: {
 					_id: 0,
 					id: '$_id',
@@ -96,7 +114,7 @@ exports.getDriver = async (req, res, next) => {
 					first_name: 1,
 					last_name: 1,
 					phone_no: 1,
-					username: 1,
+					username: { $arrayElemAt: ['$userDetails.username', 0] },
 				},
 			},
 		]);
@@ -182,10 +200,10 @@ exports.createDriver = async (req, res, next) => {
 			});
 		}
 
-		const existingUsernameDriver = await Driver.findOne({
+		const existingUsername = await User.findOne({
 			username: username,
 		});
-		if (existingUsernameDriver) {
+		if (existingUsername) {
 			return res.status(400).json({
 				success: false,
 				error: 'Username already exists',
@@ -208,6 +226,12 @@ exports.createDriver = async (req, res, next) => {
 		}
 
 		const driver = await Driver.create(req.body);
+		const user = await User.create({
+			username: username,
+			password: password,
+			role: 'driver',
+			driver_id: driver._id,
+		});
 
 		return res.status(201).json({
 			success: true,
@@ -217,7 +241,7 @@ exports.createDriver = async (req, res, next) => {
 				first_name: driver.first_name,
 				last_name: driver.last_name,
 				phone_no: driver.phone_no,
-				username: driver.username,
+				username: user.username,
 			},
 		});
 	} catch (err) {
@@ -267,12 +291,12 @@ exports.updateDriver = async (req, res, next) => {
 			});
 		}
 
-		const existingUsernameDriver = await Driver.findOne({
+		const existingUsername = await User.findOne({
 			username: username ?? '',
 		});
 		if (
-			existingUsernameDriver &&
-			existingUsernameDriver._id.toString() !== req.params.id
+			existingUsername &&
+			existingUsername.driver_id.toString() !== req.params.id
 		) {
 			return res.status(400).json({
 				success: false,
@@ -306,6 +330,15 @@ exports.updateDriver = async (req, res, next) => {
 				.json({ success: false, error: 'The driver not found' });
 		}
 
+		const user = await User.findOneAndUpdate(
+			{ driver_id: new mongoose.Types.ObjectId(req.params.id) },
+			req.body,
+			{
+				new: true,
+				runValidators: true,
+			}
+		);
+
 		return res.status(200).json({
 			success: true,
 			data: {
@@ -314,7 +347,7 @@ exports.updateDriver = async (req, res, next) => {
 				first_name: driver.first_name,
 				last_name: driver.last_name,
 				phone_no: driver.phone_no,
-				username: driver.username,
+				username: user.username,
 			},
 		});
 	} catch (err) {
@@ -334,6 +367,10 @@ exports.deleteDriver = async (req, res, next) => {
 				.status(404)
 				.json({ success: false, error: 'The driver not found' });
 		}
+
+		await User.findOneAndDelete({
+			driver_id: new mongoose.Types.ObjectId(req.params.id),
+		});
 
 		await Car.updateMany(
 			{ driver_id: new mongoose.Types.ObjectId(req.params.id) },

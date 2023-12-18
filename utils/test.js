@@ -2,6 +2,7 @@ const sinon = require('sinon');
 const mongoose = require('mongoose');
 const chai = require('chai');
 const { createEmergency } = require('../controllers/emergencies');
+const User = require('../models/User');
 const expect = chai.expect;
 
 const getCurrentData = async (entityModel, includeFields) => {
@@ -109,6 +110,7 @@ const executeTest = async (
 	const actualStatus = mockResponse.status.getCall(0).args[0];
 	expect(actualStatus).to.deep.equal(expectedStatus);
 };
+exports.executeTest = executeTest;
 
 exports.executeGetTest = async (
 	controllerFunction,
@@ -200,6 +202,7 @@ exports.executeUpdateTest = async (
 		async (response) => {
 			const dataAfterUpdate = await getCurrentData(entityModel, includeFields);
 			if (expectedStatus === 200) {
+				const users = await getCurrentData(User, ['username', 'driver_id']);
 				const updatedItem = () => {
 					const item = dataAfterUpdate.find(
 						(item) => item.id.toString() === requestBody.params.id
@@ -209,6 +212,8 @@ exports.executeUpdateTest = async (
 						return {
 							...rest,
 							name: `${rest.first_name} ${rest.last_name}`,
+							username: users.filter((user) => user.driver_id === rest.id)[0]
+								.username,
 						};
 					}
 					return item;

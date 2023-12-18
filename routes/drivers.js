@@ -72,26 +72,28 @@ module.exports = router;
  *     description: Retrieve a list of drivers based on specified filters.
  *     tags:
  *       - Drivers
- *     parameters:
- *       - in: query
- *         name: id
- *         description: Filter drivers by ID.
- *       - in: query
- *         name: first_name
- *         example: "John"
- *         description: Filter drivers by first name.
- *       - in: query
- *         name: last_name
- *         example: "Doe"
- *         description: Filter drivers by last name.
- *       - in: query
- *         name: phone_no
- *         example: "123-456-7890"
- *         description: Filter drivers by phone number.
- *       - in: query
- *         name: username
- *         example: "johndoe"
- *         description: Filter drivers by username.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           example:
+ *             id: "609e44902136d23c14ab8db1"
+ *             first_name: "John"
+ *             last_name: "Doe"
+ *             phone_no: "123-456-7890"
+ *             username: "johndoe"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               first_name:
+ *                 type: string
+ *               last_name:
+ *                 type: string
+ *               phone_no:
+ *                 type: string
+ *               username:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: A list of drivers based on the specified filters.
@@ -205,42 +207,35 @@ module.exports = router;
  *     description: Create a new driver with the provided information.
  *     tags:
  *       - Drivers
- *     parameters:
- *       - in: query
- *         name: first_name
- *         required: true
- *         description: The first name of the driver.
- *         schema:
- *           type: string
- *           example: John
- *       - in: query
- *         name: last_name
- *         required: true
- *         description: The last name of the driver.
- *         schema:
- *           type: string
- *           example: Doe
- *       - in: query
- *         name: username
- *         required: true
- *         description: The username of the driver.
- *         schema:
- *           type: string
- *           example: john_doe
- *       - in: query
- *         name: password
- *         required: true
- *         description: The password of the driver.
- *         schema:
- *           type: string
- *           example: secret123
- *       - in: query
- *         name: phone_no
- *         required: true
- *         description: The phone number of the driver.
- *         schema:
- *           type: string
- *           example: 123-456-7890
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             first_name: "John"
+ *             last_name: "Doe"
+ *             username: "john_doe"
+ *             password: "secret123"
+ *             phone_no: "123-456-7890"
+ *           schema:
+ *             type: object
+ *             properties:
+ *               first_name:
+ *                 type: string
+ *               last_name:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               phone_no:
+ *                 type: string
+ *             required:
+ *               - first_name
+ *               - last_name
+ *               - username
+ *               - password
+ *               - phone_no
  *     responses:
  *       '201':
  *         description: Details of the created driver.
@@ -290,41 +285,28 @@ module.exports = router;
  *         description: The ID of the driver to be updated.
  *         schema:
  *           type: string
- *       - in: query
- *         name: first_name
- *         required: false
- *         description: The updated first name of the driver.
- *         schema:
- *           type: string
- *           example: John
- *       - in: query
- *         name: last_name
- *         required: false
- *         description: The updated last name of the driver.
- *         schema:
- *           type: string
- *           example: Doe
- *       - in: query
- *         name: username
- *         required: false
- *         description: The updated username of the driver.
- *         schema:
- *           type: string
- *           example: john_doe
- *       - in: query
- *         name: password
- *         required: false
- *         description: The updated password of the driver.
- *         schema:
- *           type: string
- *           example: new_secret123
- *       - in: query
- *         name: phone_no
- *         required: false
- *         description: The updated phone number of the driver.
- *         schema:
- *           type: string
- *           example: 987-654-3210
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           example:
+ *             first_name: John
+ *             last_name: Doe
+ *             username: john_doe
+ *             password: new_secret123
+ *             phone_no: 987-654-3210
+ *           schema:
+ *             type: object
+ *             properties:
+ *               first_name:
+ *                 type: string
+ *               last_name:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               phone_no:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: Details of the updated driver.

@@ -25,6 +25,7 @@ const limiter = rateLimit({
 const app = express();
 
 // Route files
+const auth = require('./routes/auth');
 const cars = require('./routes/cars');
 const cameras = require('./routes/cameras');
 const drivers = require('./routes/drivers');
@@ -40,6 +41,7 @@ app.use(mongoSanitize()); //Sanitize data
 app.use(xss()); //Prevent XSS attacks
 
 // Body parser
+app.use('/api/auth', auth);
 app.use('/api/cars', cars);
 app.use('/api/cameras', cameras);
 app.use('/api/drivers', drivers);

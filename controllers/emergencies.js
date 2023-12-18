@@ -75,7 +75,7 @@ exports.getEmergencies = async (req, res, next) => {
 
 //@desc     Create new emergency
 //@route    POST /api/emergencies
-//@access   Public
+//@access   Private
 exports.createEmergency = async (req, res, next) => {
 	try {
 		const { car_id, status, latitude, longitude } = req.body;
