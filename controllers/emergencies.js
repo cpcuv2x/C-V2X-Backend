@@ -40,6 +40,7 @@ exports.getEmergencies = async (req, res, next) => {
 					_id: 0,
 					id: '$_id',
 					status: 1,
+					car_id: '$car_info._id',
 					car_name: '$car_info.name',
 					driver_phone_no: {
 						$ifNull: ['$driver_info.phone_no', ''],
