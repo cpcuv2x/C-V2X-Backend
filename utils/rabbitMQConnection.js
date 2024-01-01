@@ -13,7 +13,7 @@ async function publishToQueue(queueName, data) {
 			channel = await connection.createChannel();
 			console.log('Channel created');
 		}
-		await channel.assertQueue(queueName);
+		await channel.assertQueue(queueName, true);
 		channel.sendToQueue(queueName, Buffer.from(data));
 		console.log(`Message send to queue ${queueName}`);
 	} catch (error) {

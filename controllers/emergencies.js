@@ -191,7 +191,7 @@ exports.updateEmergency = async (req, res, next) => {
 				.status(404)
 				.json({ success: false, error: 'The emergency not found' });
 		}
-
+		await publishToQueue('emergency', 'Emergency edited');
 		return res.status(200).json({
 			success: true,
 			data: {
