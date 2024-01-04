@@ -5,8 +5,11 @@ let channel = null;
 
 async function publishToQueue(queueName, data) {
 	try {
+		if (!process.env['RABBITMQ_HOST']) {
+			throw new Error('RABBITMQ_HOST is required');
+		}
 		if (!connection) {
-			connection = await amqp.connect('amqp://localhost');
+			connection = await amqp.connect(process.env['RABBITMQ_HOST']);
 			console.log('Connection to RabbitMQ established');
 		}
 		if (!channel) {
