@@ -18,7 +18,6 @@ async function publishToQueue(queueName, data) {
 		}
 		await channel.assertQueue(queueName, true);
 		channel.sendToQueue(queueName, Buffer.from(data));
-		console.log(`Message send to queue ${queueName}`);
 	} catch (error) {
 		throw new Error(`Error publishing to queue: ${error.message}`);
 	}
