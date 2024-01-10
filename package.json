@@ -23,20 +23,20 @@
 		"helmet": "^7.1.0",
 		"hpp": "^0.2.3",
 		"jsonwebtoken": "^9.0.2",
-		"xss-clean": "^0.1.4"
+		"xss-clean": "^0.1.4",
+		"mongodb-memory-server": "^9.1.1",
+		"mongoose": "^8.0.2",
+		"swagger-jsdoc": "^6.2.8",
+		"swagger-ui-express": "^5.0.0"
 	},
 	"devDependencies": {
 		"chai": "^4.3.10",
 		"chai-http": "^4.4.0",
 		"mocha": "^10.2.0",
-		"mongodb-memory-server": "^9.1.1",
-		"mongoose": "^8.0.2",
 		"nodemon": "^3.0.1",
 		"nyc": "^15.1.0",
 		"sinon": "^17.0.1",
 		"sinon-chai": "^3.7.0",
-		"supertest": "^6.3.3",
-		"swagger-jsdoc": "^6.2.8",
-		"swagger-ui-express": "^5.0.0"
+		"supertest": "^6.3.3"
 	}
 }
