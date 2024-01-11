@@ -6,7 +6,7 @@
 	"scripts": {
 		"test": "nyc mocha test/test-setup.js test/**/*.js",
 		"dev": "nodemon server",
-		"build": "",
+		"build": "npm install",
 		"start": "node server"
 	},
 	"author": "",
