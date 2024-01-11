@@ -32,6 +32,7 @@ const drivers = require('./routes/drivers');
 const rsus = require('./routes/rsus');
 const emergencies = require('./routes/emergencies');
 
+app.set('trust proxy', true);
 app.use(cors());
 app.use(limiter); //Rate Limiting
 app.use(helmet()); //Set security headers

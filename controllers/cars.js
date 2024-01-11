@@ -69,6 +69,44 @@ exports.getCars = async (req, res, next) => {
 							in: { $toString: { $ifNull: ['$$backCamera._id', null] } },
 						},
 					},
+					tempLeftCamId: {
+						$let: {
+							vars: {
+								leftCamera: {
+									$arrayElemAt: [
+										{
+											$filter: {
+												input: '$cameras',
+												as: 'camera',
+												cond: { $eq: ['$$camera.position', 'Left'] },
+											},
+										},
+										0,
+									],
+								},
+							},
+							in: { $toString: { $ifNull: ['$$leftCamera._id', null] } },
+						},
+					},
+					tempRightCamId: {
+						$let: {
+							vars: {
+								rightCamera: {
+									$arrayElemAt: [
+										{
+											$filter: {
+												input: '$cameras',
+												as: 'camera',
+												cond: { $eq: ['$$camera.position', 'Right'] },
+											},
+										},
+										0,
+									],
+								},
+							},
+							in: { $toString: { $ifNull: ['$$rightCamera._id', null] } },
+						},
+					},
 				},
 			},
 			{
@@ -130,6 +168,38 @@ exports.getCars = async (req, res, next) => {
 								{
 									tempBackCamId: {
 										$regex: req.body.back_cam_id ?? '',
+										$options: 'i',
+									},
+								},
+							],
+						},
+						{
+							$or: [
+								{
+									tempLeftCamId:
+										req.body.left_cam_id && req.body.left_cam_id.length !== 0
+											? req.body.left_cam_id
+											: null,
+								},
+								{
+									tempLeftCamId: {
+										$regex: req.body.left_cam_id ?? '',
+										$options: 'i',
+									},
+								},
+							],
+						},
+						{
+							$or: [
+								{
+									tempRightCamId:
+										req.body.right_cam_id && req.body.right_cam_id.length !== 0
+											? req.body.right_cam_id
+											: null,
+								},
+								{
+									tempRightCamId: {
+										$regex: req.body.right_cam_id ?? '',
 										$options: 'i',
 									},
 								},
