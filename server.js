@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
+const { setupWebRTCSocketIO } = require('./utils/webRTCConnection');
 
 // Load env vars
 dotenv.config({ path: './config/config.env' });
@@ -96,6 +97,8 @@ const server = app.listen(
 		PORT
 	)
 );
+
+setupWebRTCSocketIO(server);
 
 //Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
