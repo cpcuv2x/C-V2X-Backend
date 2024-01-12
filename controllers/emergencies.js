@@ -1,8 +1,23 @@
 const mongoose = require('mongoose');
-const { publishToQueue } = require('../utils/rabbitMQConnection');
 const Emergency = require('../models/Emergency');
 const Car = require('../models/Car');
 const { emergencyRegex } = require('../utils/regex');
+
+const http = require('http');
+const socketIO = require('socket.io');
+
+const server = http.createServer({
+	cors: {
+		origin: '*',
+		methods: ['GET'],
+	},
+});
+const io = socketIO(server);
+const port = process.env.SOCKET_PORT || 3426;
+
+server.listen(port, function () {
+	console.log(`Socket.IO listening on port ${port}`);
+});
 
 //@desc     Get all Emergencies
 //@route    GET /api/emergencies
@@ -120,17 +135,17 @@ exports.createEmergency = async (req, res, next) => {
 		}
 
 		const emergency = await Emergency.create(req.body);
-		await publishToQueue('emergency', 'Emergency created');
-
+		const data = {
+			id: emergency._id,
+			car_id: emergency.car_id,
+			status: emergency.status,
+			latitude: emergency.latitude,
+			longitude: emergency.longitude,
+		};
+		io.emit('emergency', data);
 		return res.status(201).json({
 			success: true,
-			data: {
-				id: emergency._id,
-				car_id: emergency.car_id,
-				status: emergency.status,
-				latitude: emergency.latitude,
-				longitude: emergency.longitude,
-			},
+			data: data,
 		});
 	} catch (err) {
 		return res.status(400).json({ success: false, error: err.message });
@@ -191,16 +206,17 @@ exports.updateEmergency = async (req, res, next) => {
 				.status(404)
 				.json({ success: false, error: 'The emergency not found' });
 		}
-		await publishToQueue('emergency', 'Emergency edited');
+		const data = {
+			id: emergency._id,
+			car_id: emergency.car_id,
+			status: emergency.status,
+			latitude: emergency.latitude,
+			longitude: emergency.longitude,
+		};
+		io.emit('emergency', data);
 		return res.status(200).json({
 			success: true,
-			data: {
-				id: emergency._id,
-				car_id: car_id ?? emergency.car_id,
-				status: status ?? emergency.status,
-				latitude: latitude ?? emergency.latitude,
-				longitude: longitude ?? emergency.longitude,
-			},
+			data: data,
 		});
 	} catch (err) {
 		return res.status(400).json({ success: false, error: err.message });
