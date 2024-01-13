@@ -3,22 +3,6 @@ const Emergency = require('../models/Emergency');
 const Car = require('../models/Car');
 const { emergencyRegex } = require('../utils/regex');
 
-const http = require('http');
-const socketIO = require('socket.io');
-
-const server = http.createServer({
-	cors: {
-		origin: '*',
-		methods: ['GET'],
-	},
-});
-const io = socketIO(server);
-const port = process.env.SOCKET_PORT || 3426;
-
-server.listen(port, function () {
-	console.log(`Socket.IO listening on port ${port}`);
-});
-
 //@desc     Get all Emergencies
 //@route    GET /api/emergencies
 //@access   Public
@@ -142,7 +126,7 @@ exports.createEmergency = async (req, res, next) => {
 			latitude: emergency.latitude,
 			longitude: emergency.longitude,
 		};
-		io.emit('emergency', data);
+		req.socket.emit('emergency', data);
 		return res.status(201).json({
 			success: true,
 			data: data,
@@ -213,7 +197,7 @@ exports.updateEmergency = async (req, res, next) => {
 			latitude: emergency.latitude,
 			longitude: emergency.longitude,
 		};
-		io.emit('emergency', data);
+		req.socket.emit('emergency', data);
 		return res.status(200).json({
 			success: true,
 			data: data,
