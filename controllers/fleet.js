@@ -5,10 +5,6 @@ function fleetController(io) {
 		const data = JSON.parse(msg.content.toString());
 		io.emit('location', data);
 	});
-	consumeQueue({ queueName: 'emergency', durable: true }, (msg) => {
-		const data = JSON.parse(msg.content.toString());
-		io.emit('emergency', data);
-	});
 	consumeQueue({ queueName: 'car_speed' }, (msg) => {
 		const data = JSON.parse(msg.content.toString());
 		io.emit('car_speed', data);
