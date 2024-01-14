@@ -28,7 +28,7 @@ async function consumeQueue({ queueName, durable = false }, callback) {
 			(msg) => {
 				callback(msg);
 			},
-			{ noAck: false }
+			{ noAck: true }
 		);
 	} catch (error) {
 		throw new Error(`Error consuming queue: ${error.message} ${error}`);
