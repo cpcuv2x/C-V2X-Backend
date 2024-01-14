@@ -34,6 +34,7 @@ const drivers = require('./routes/drivers');
 const rsus = require('./routes/rsus');
 const emergencies = require('./routes/emergencies');
 const { fleetController } = require('./controllers/fleet');
+const { socketMiddleware } = require('./middleware/socket');
 
 app.use(cors());
 app.use(limiter); //Rate Limiting
@@ -51,18 +52,13 @@ const socket_server = http.createServer({
 });
 const socket = socketIO(socket_server);
 
-app.use(function (req, _res, next) {
-	req.socket = socket;
-	next();
-});
-
 // Body parser
 app.use('/api/auth', auth);
 app.use('/api/cars', cars);
 app.use('/api/cameras', cameras);
 app.use('/api/drivers', drivers);
 app.use('/api/rsus', rsus);
-app.use('/api/emergencies', emergencies);
+app.use('/api/emergencies', socketMiddleware(socket), emergencies);
 fleetController(socket);
 
 // Cookie parser
