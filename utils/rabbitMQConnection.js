@@ -1,21 +1,17 @@
 const amqp = require('amqplib');
 
-let connection = null;
-let channel = null;
+async function connectRabbitMQ() {
+	if (!process.env.RABBITMQ_HOST) {
+		throw new Error('RABBITMQ_URL env is undefined');
+	}
+	const connection = await amqp.connect(process.env.RABBITMQ_HOST);
+	const channel = await connection.createChannel();
+	return channel;
+}
 
 async function publishToQueue(queueName, data) {
 	try {
-		if (!process.env['RABBITMQ_HOST']) {
-			throw new Error('RABBITMQ_HOST is required');
-		}
-		if (!connection) {
-			connection = await amqp.connect(process.env['RABBITMQ_HOST']);
-			console.log('Connection to RabbitMQ established');
-		}
-		if (!channel) {
-			channel = await connection.createChannel();
-			console.log('Channel created');
-		}
+		const channel = await connectRabbitMQ();
 		await channel.assertQueue(queueName, true);
 		channel.sendToQueue(queueName, Buffer.from(data));
 	} catch (error) {
@@ -23,4 +19,20 @@ async function publishToQueue(queueName, data) {
 	}
 }
 
-module.exports = { publishToQueue };
+async function consumeQueue({ queueName, durable = false }, callback) {
+	try {
+		const channel = await connectRabbitMQ();
+		await channel.assertQueue(queueName, { durable: durable });
+		channel.consume(
+			queueName,
+			(msg) => {
+				callback(msg);
+			},
+			{ noAck: true }
+		);
+	} catch (error) {
+		throw new Error(`Error consuming queue: ${error.message} ${error}`);
+	}
+}
+
+module.exports = { publishToQueue, consumeQueue };
