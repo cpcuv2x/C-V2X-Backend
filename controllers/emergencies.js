@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { publishToQueue } = require('../utils/rabbitMQConnection');
 const Emergency = require('../models/Emergency');
 const Car = require('../models/Car');
 const { emergencyRegex } = require('../utils/regex');

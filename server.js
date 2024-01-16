@@ -37,6 +37,7 @@ const emergencies = require('./routes/emergencies');
 const { fleetController } = require('./controllers/fleet');
 const { socketMiddleware } = require('./middleware/socket');
 
+app.set('trust proxy', true);
 app.use(cors());
 app.use(limiter); //Rate Limiting
 app.use(helmet()); //Set security headers
