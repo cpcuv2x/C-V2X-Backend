@@ -10,6 +10,7 @@ const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
+const { setupWebRTCSocketIO } = require('./utils/webRTCConnection');
 const http = require('http');
 const socketIO = require('socket.io');
 
@@ -110,6 +111,8 @@ const server = app.listen(
 		PORT
 	)
 );
+
+setupWebRTCSocketIO(server);
 
 socket_server.listen(SOCKET_PORT, () => {
 	console.log(`Socket.IO listening on port ${SOCKET_PORT}`);
