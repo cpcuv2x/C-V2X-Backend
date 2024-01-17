@@ -223,6 +223,9 @@ exports.getCars = async (req, res, next) => {
 							{ $arrayElemAt: ['$driverInfo.last_name', 0] },
 						],
 					},
+					driver_phone_no: {
+						$ifNull: [{ $arrayElemAt: ['$driverInfo.phone_no', 0] }, ''],
+					},
 					cameras: {
 						$map: {
 							input: '$cameras',
@@ -302,6 +305,9 @@ exports.getCar = async (req, res, next) => {
 							' ',
 							{ $arrayElemAt: ['$driverInfo.last_name', 0] },
 						],
+					},
+					driver_phone_no: {
+						$ifNull: [{ $arrayElemAt: ['$driverInfo.phone_no', 0] }, ''],
 					},
 					cameras: {
 						$map: {

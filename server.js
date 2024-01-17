@@ -10,6 +10,9 @@ const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
+const { setupWebRTCSocketIO } = require('./utils/webRTCConnection');
+const http = require('http');
+const socketIO = require('socket.io');
 
 // Load env vars
 dotenv.config({ path: './config/config.env' });
@@ -31,6 +34,8 @@ const cameras = require('./routes/cameras');
 const drivers = require('./routes/drivers');
 const rsus = require('./routes/rsus');
 const emergencies = require('./routes/emergencies');
+const { fleetController } = require('./controllers/fleet');
+const { socketMiddleware } = require('./middleware/socket');
 
 app.set('trust proxy', true);
 app.use(cors());
@@ -41,18 +46,28 @@ app.use(hpp()); //Prevent http param pollutions
 app.use(mongoSanitize()); //Sanitize data
 app.use(xss()); //Prevent XSS attacks
 
+const socket_server = http.createServer({
+	cors: {
+		origin: '*',
+		methods: ['GET'],
+	},
+});
+const socket = socketIO(socket_server);
+
 // Body parser
 app.use('/api/auth', auth);
 app.use('/api/cars', cars);
 app.use('/api/cameras', cameras);
 app.use('/api/drivers', drivers);
 app.use('/api/rsus', rsus);
-app.use('/api/emergencies', emergencies);
+app.use('/api/emergencies', socketMiddleware(socket), emergencies);
+fleetController(socket);
 
 // Cookie parser
 app.use(cookieParser());
 
 const PORT = process.env.PORT || 5000;
+const SOCKET_PORT = process.env.SOCKET_PORT || 3426;
 
 //Swagger API
 const swaggerOptions = {
@@ -97,6 +112,12 @@ const server = app.listen(
 		PORT
 	)
 );
+
+setupWebRTCSocketIO(server);
+
+socket_server.listen(SOCKET_PORT, () => {
+	console.log(`Socket.IO listening on port ${SOCKET_PORT}`);
+});
 
 //Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
