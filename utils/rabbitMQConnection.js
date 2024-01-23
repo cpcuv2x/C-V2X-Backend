@@ -19,7 +19,10 @@ async function publishToQueue(queueName, data) {
 	}
 }
 
-async function consumeQueue({ queueName, durable = false }, callback) {
+async function consumeQueue(
+	{ queueName, durable = false, noAck = true },
+	callback
+) {
 	try {
 		const channel = await connectRabbitMQ();
 		await channel.assertQueue(queueName, { durable: durable });
@@ -27,8 +30,11 @@ async function consumeQueue({ queueName, durable = false }, callback) {
 			queueName,
 			(msg) => {
 				callback(msg);
+				if (!noAck) {
+					channel.ack(msg);
+				}
 			},
-			{ noAck: true }
+			{ noAck: noAck }
 		);
 	} catch (error) {
 		throw new Error(`Error consuming queue: ${error.message} ${error}`);

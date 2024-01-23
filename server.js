@@ -35,6 +35,7 @@ const drivers = require('./routes/drivers');
 const rsus = require('./routes/rsus');
 const emergencies = require('./routes/emergencies');
 const { fleetController } = require('./controllers/fleet');
+const { createEmergencyFromRabbitMQ } = require('./controllers/emergencies');
 const { socketMiddleware } = require('./middleware/socket');
 
 app.set('trust proxy', true);
@@ -114,6 +115,7 @@ const server = app.listen(
 );
 
 setupWebRTCSocketIO(server);
+createEmergencyFromRabbitMQ(socket);
 
 socket_server.listen(SOCKET_PORT, () => {
 	console.log(`Socket.IO listening on port ${SOCKET_PORT}`);
