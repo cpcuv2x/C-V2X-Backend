@@ -46,13 +46,17 @@ app.use(hpp()); //Prevent http param pollutions
 app.use(mongoSanitize()); //Sanitize data
 app.use(xss()); //Prevent XSS attacks
 
-const socket_server = http.createServer({
+const socket_server = http.createServer(app);
+const socket = socketIO(socket_server, {
+	transports: ['websocket', 'polling'],
+	maxHttpBufferSize: 1e8,
+	pingTimeout: 60000,
 	cors: {
 		origin: '*',
-		methods: ['GET'],
+		methods: ['GET', 'POST'],
 	},
+	allowEIO3: true,
 });
-const socket = socketIO(socket_server);
 
 // Body parser
 app.use('/api/auth', auth);
