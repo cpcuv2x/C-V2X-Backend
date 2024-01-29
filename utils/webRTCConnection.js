@@ -19,10 +19,12 @@ function setupWebRTCSocketIO(server) {
 		socket.on('control center connecting', async (data) => {
 			console.log('control center connecting');
 			try {
-				const controlCenter = controlCenters.find((m) => m.id == data.uid);
+				const controlCenter = controlCenters.find(
+					(m) => m.roomID == data.roomID
+				);
 				// console.log(cars);
 				if (!controlCenter) {
-					controlCenters.push({ socket: socket, uid: data.uid });
+					controlCenters.push({ socket: socket, roomID: data.roomID });
 				} else {
 					controlCenter.socket = socket;
 				}
@@ -95,10 +97,12 @@ function setupWebRTCSocketIO(server) {
 		});
 
 		socket.on('send object detection', async (data) => {
-			console.log('send object detection', data);
+			// console.log('send object detection', data.roomID);
 			try {
 				controlCenters.forEach((controlCenter) => {
-					controlCenter.socket?.emit('send object detection', data);
+					if (data.roomID == controlCenter.roomID) {
+						controlCenter.socket?.emit('send object detection', data.boxes);
+					}
 				});
 			} catch (err) {
 				console.log(err);
