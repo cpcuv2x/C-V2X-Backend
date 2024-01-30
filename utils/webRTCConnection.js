@@ -24,9 +24,9 @@ function setupWebRTCSocketIO(server) {
 				);
 				// console.log(cars);
 				if (!controlCenter) {
-					controlCenters.push({ socket: socket, roomID: data.roomID });
+					controlCenters.push({ socket: [socket], roomID: data.roomID });
 				} else {
-					controlCenter.socket = socket;
+					controlCenter.socket.push(socket);
 				}
 			} catch (err) {
 				console.log(err);
@@ -101,7 +101,9 @@ function setupWebRTCSocketIO(server) {
 			try {
 				controlCenters.forEach((controlCenter) => {
 					if (data.roomID == controlCenter.roomID) {
-						controlCenter.socket?.emit('send object detection', data.boxes);
+						controlCenter.socket.forEach((socket) => {
+							socket.emit('send object detection', data.boxes);
+						});
 					}
 				});
 			} catch (err) {
