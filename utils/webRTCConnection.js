@@ -2,6 +2,7 @@ const socketIO = require('socket.io');
 const RTCMultiConnectionServer = require('rtcmulticonnection-server');
 
 const cars = [];
+const controlCenters = [];
 
 function setupWebRTCSocketIO(server) {
 	const io = socketIO(server, {
@@ -14,6 +15,25 @@ function setupWebRTCSocketIO(server) {
 	io.on('connection', (socket) => {
 		// console.log(`Client connected: ${socket.id}`);
 		RTCMultiConnectionServer.addSocket(socket);
+
+		socket.on('control center connecting', async (data) => {
+			console.log('control center connecting');
+			try {
+				const controlCenter = controlCenters.find(
+					(m) => m.roomID == data.roomID
+				);
+				// console.log(cars);
+				if (!controlCenter) {
+					controlCenters.push({ socket: socket, roomID: data.roomID });
+				} else {
+					controlCenter.socket = socket;
+				}
+			} catch (err) {
+				console.log(err);
+				return;
+			}
+		});
+
 		socket.on('car connecting', async (data) => {
 			try {
 				const car = cars.find((m) => m.id == data.carID);
@@ -70,6 +90,20 @@ function setupWebRTCSocketIO(server) {
 					// console.log(car.cam1);
 					car.cam2?.emit('stop recording');
 				}
+			} catch (err) {
+				console.log(err);
+				return;
+			}
+		});
+
+		socket.on('send object detection', async (data) => {
+			// console.log('send object detection', data.roomID);
+			try {
+				controlCenters.forEach((controlCenter) => {
+					if (data.roomID == controlCenter.roomID) {
+						controlCenter.socket?.emit('send object detection', data.boxes);
+					}
+				});
 			} catch (err) {
 				console.log(err);
 				return;
