@@ -38,9 +38,9 @@ const { fleetController } = require('./controllers/fleet');
 const { createEmergencyFromRabbitMQ } = require('./controllers/emergencies');
 const { socketMiddleware } = require('./middleware/socket');
 
-app.set('trust proxy', true);
+// app.set('trust proxy', true);
 app.use(cors());
-app.use(limiter); //Rate Limiting
+// app.use(limiter); //Rate Limiting
 app.use(helmet()); //Set security headers
 app.use(express.json());
 app.use(hpp()); //Prevent http param pollutions
