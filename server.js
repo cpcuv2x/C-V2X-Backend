@@ -13,6 +13,7 @@ const swaggerUI = require('swagger-ui-express');
 const { setupWebRTCSocketIO } = require('./utils/webRTCConnection');
 const http = require('http');
 const socketIO = require('socket.io');
+let { connectRabbitMQ } = require('./utils/rabbitMQConnection');
 
 // Load env vars
 dotenv.config({ path: './config/config.env' });
@@ -62,7 +63,6 @@ app.use('/api/cameras', cameras);
 app.use('/api/drivers', drivers);
 app.use('/api/rsus', rsus);
 app.use('/api/emergencies', socketMiddleware(socket), emergencies);
-fleetController(socket);
 
 // Cookie parser
 app.use(cookieParser());
@@ -114,8 +114,11 @@ const server = app.listen(
 	)
 );
 
+connectRabbitMQ().then(() => {
+	fleetController(socket);
+	createEmergencyFromRabbitMQ(socket);
+});
 setupWebRTCSocketIO(server);
-createEmergencyFromRabbitMQ(socket);
 
 socket_server.listen(SOCKET_PORT, () => {
 	console.log(`Socket.IO listening on port ${SOCKET_PORT}`);

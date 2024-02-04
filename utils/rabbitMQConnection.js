@@ -1,17 +1,17 @@
 const amqp = require('amqplib');
 
+let connection;
+
 async function connectRabbitMQ() {
 	if (!process.env.RABBITMQ_HOST) {
 		throw new Error('RABBITMQ_URL env is undefined');
 	}
-	const connection = await amqp.connect(process.env.RABBITMQ_HOST);
-	const channel = await connection.createChannel();
-	return channel;
+	connection = await amqp.connect(process.env.RABBITMQ_HOST);
 }
 
 async function publishToQueue(queueName, data) {
 	try {
-		const channel = await connectRabbitMQ();
+		const channel = await connection.createChannel();
 		await channel.assertQueue(queueName, true);
 		channel.sendToQueue(queueName, Buffer.from(data));
 	} catch (error) {
@@ -24,7 +24,7 @@ async function consumeQueue(
 	callback
 ) {
 	try {
-		const channel = await connectRabbitMQ();
+		const channel = await connection.createChannel();
 		await channel.assertQueue(queueName, { durable: durable });
 		channel.consume(
 			queueName,
@@ -41,4 +41,4 @@ async function consumeQueue(
 	}
 }
 
-module.exports = { publishToQueue, consumeQueue };
+module.exports = { connectRabbitMQ, publishToQueue, consumeQueue };
