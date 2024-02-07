@@ -9,6 +9,8 @@ describe('Report Model Validation', () => {
 		const rsuData = {
 			name: 'Test RSU',
 			recommended_speed: '100',
+			latitude: 123.456,
+			longitude: -45.678,
 		};
 
 		rsu = await RSU.create(rsuData);
