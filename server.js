@@ -6,7 +6,6 @@ const cors = require('cors');
 const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require('helmet');
 const xss = require('xss-clean');
-const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
 const swaggerJsDoc = require('swagger-jsdoc');
 const swaggerUI = require('swagger-ui-express');
@@ -21,11 +20,6 @@ dotenv.config({ path: './config/config.env' });
 // Connect to database
 connectDB();
 
-const limiter = rateLimit({
-	windowsMs: 60 * 1000, // 1 min
-	max: 1000,
-});
-
 const app = express();
 
 // Route files
@@ -39,9 +33,7 @@ const { fleetController } = require('./controllers/fleet');
 const { createEmergencyFromRabbitMQ } = require('./controllers/emergencies');
 const { socketMiddleware } = require('./middleware/socket');
 
-// app.set('trust proxy', true);
 app.use(cors());
-// app.use(limiter); //Rate Limiting
 app.use(helmet()); //Set security headers
 app.use(express.json());
 app.use(hpp()); //Prevent http param pollutions
