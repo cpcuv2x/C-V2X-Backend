@@ -1,12 +1,33 @@
 const mongoose = require('mongoose');
 const RSU = require('../models/RSU');
-const { noSpaceRegex, numberRegex } = require('../utils/regex');
+const { noSpaceRegex, numberRegex, floatRegex } = require('../utils/regex');
 
 //@desc     Get all RSUs
 //@route    PUT /api/rsus
 //@access   Public
 exports.getRSUs = async (req, res, next) => {
 	try {
+		const filter = {};
+
+		if (req.body.id) {
+			filter.tempId = { $regex: req.body.id, $options: 'i' };
+		}
+		if (req.body.name) {
+			filter.name = { $regex: req.body.name, $options: 'i' };
+		}
+		if (req.body.recommended_speed) {
+			filter.recommended_speed = {
+				$regex: req.body.recommended_speed,
+				$options: 'i',
+			};
+		}
+		if (req.body.latitude) {
+			filter.latitude = { $regex: req.body.latitude, $options: 'i' };
+		}
+		if (req.body.longitude) {
+			filter.longitude = { $regex: req.body.longitude, $options: 'i' };
+		}
+
 		const rsus = await RSU.aggregate([
 			{
 				$addFields: {
@@ -14,17 +35,7 @@ exports.getRSUs = async (req, res, next) => {
 				},
 			},
 			{
-				$match: {
-					tempId: { $regex: req.body.id ?? '', $options: 'i' },
-					name: {
-						$regex: req.body.name ?? '',
-						$options: 'i',
-					},
-					recommended_speed: {
-						$regex: req.body.recommended_speed ?? '',
-						$options: 'i',
-					},
-				},
+				$match: filter,
 			},
 			{
 				$project: {
@@ -32,6 +43,8 @@ exports.getRSUs = async (req, res, next) => {
 					id: '$_id',
 					name: 1,
 					recommended_speed: 1,
+					latitude: 1,
+					longitude: 1,
 				},
 			},
 		]).sort({ name: 1 });
@@ -82,6 +95,8 @@ exports.getRSU = async (req, res, next) => {
 					id: '$_id',
 					name: 1,
 					recommended_speed: 1,
+					latitude: 1,
+					longitude: 1,
 				},
 			},
 		]);
@@ -103,7 +118,7 @@ exports.getRSU = async (req, res, next) => {
 //@access   Public
 exports.createRSU = async (req, res, next) => {
 	try {
-		const { name, recommended_speed } = req.body;
+		const { name, recommended_speed, latitude, longitude } = req.body;
 
 		if (!name) {
 			return res
@@ -118,6 +133,20 @@ exports.createRSU = async (req, res, next) => {
 			});
 		}
 
+		if (!latitude) {
+			return res.status(400).json({
+				success: false,
+				error: 'Please add a latitude',
+			});
+		}
+
+		if (!longitude) {
+			return res.status(400).json({
+				success: false,
+				error: 'Please add a longitude',
+			});
+		}
+
 		if (!noSpaceRegex.test(name)) {
 			return res
 				.status(400)
@@ -128,6 +157,20 @@ exports.createRSU = async (req, res, next) => {
 			return res.status(400).json({
 				success: false,
 				error: 'Recommended speed should be a valid number',
+			});
+		}
+
+		if (!floatRegex.test(latitude)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Latitude should be a coordinate number',
+			});
+		}
+
+		if (!floatRegex.test(longitude)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Longitude should be a coordinate number',
 			});
 		}
 
@@ -147,6 +190,8 @@ exports.createRSU = async (req, res, next) => {
 				id: rsu._id,
 				name: rsu.name,
 				recommended_speed: rsu.recommended_speed,
+				latitude: rsu.latitude,
+				longitude: rsu.longitude,
 			},
 		});
 	} catch (err) {
@@ -159,7 +204,7 @@ exports.createRSU = async (req, res, next) => {
 //@access   Public
 exports.updateRSU = async (req, res, next) => {
 	try {
-		const { name, recommended_speed } = req.body;
+		const { name, recommended_speed, latitude, longitude } = req.body;
 
 		if (name && !noSpaceRegex.test(name)) {
 			return res
@@ -171,6 +216,20 @@ exports.updateRSU = async (req, res, next) => {
 			return res.status(400).json({
 				success: false,
 				error: 'Recommended speed should be a valid number',
+			});
+		}
+
+		if (latitude && !floatRegex.test(latitude)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Latitude should be a coordinate number',
+			});
+		}
+
+		if (longitude && !floatRegex.test(longitude)) {
+			return res.status(400).json({
+				success: false,
+				error: 'Longitude should be a coordinate number',
 			});
 		}
 
@@ -199,6 +258,8 @@ exports.updateRSU = async (req, res, next) => {
 				id: rsu._id,
 				name: name ?? rsu.name,
 				recommended_speed: recommended_speed ?? rsu.recommended_speed,
+				latitude: latitude ?? rsu.latitude,
+				longitude: longitude ?? rsu.longitude,
 			},
 		});
 	} catch (err) {
