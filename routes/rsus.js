@@ -32,6 +32,8 @@ module.exports = router;
  *       required:
  *         - name
  *         - recommended_speed
+ *         - latitude
+ *         - longitude
  *       properties:
  *         name:
  *           type: string
@@ -39,9 +41,17 @@ module.exports = router;
  *         recommended_speed:
  *           type: string
  *           description: The recommended speed of the RSU.
+ *         latitude:
+ *           type: string
+ *           description: The latitude coordinate of the RSU.
+ *         longitude:
+ *           type: string
+ *           description: The longitude coordinate of the RSU.
  *       example:
  *         name: RSU1
- *         recommended_speed: 50
+ *         recommended_speed: "50"
+ *         latitude: "40.7128"
+ *         longitude: "-74.0060"
  */
 
 /**
@@ -59,6 +69,8 @@ module.exports = router;
  *             id: "123"
  *             name: "RSU1"
  *             recommended_speed: "50"
+ *             latitude: "40.7128"
+ *             longitude: "-74.0060"
  *           schema:
  *             type: object
  *             properties:
@@ -67,6 +79,10 @@ module.exports = router;
  *               name:
  *                 type: string
  *               recommended_speed:
+ *                 type: string
+ *               latitude:
+ *                 type: string
+ *               longitude:
  *                 type: string
  *     responses:
  *       200:
@@ -80,9 +96,13 @@ module.exports = router;
  *                 - id: "123"
  *                   name: "RSU1"
  *                   recommended_speed: "50"
+ *                   latitude: "50.7128"
+ *                   longitude: "-74.0060"
  *                 - id: "456"
  *                   name: "RSU2"
  *                   recommended_speed: "60"
+ *                   latitude: "60.7128"
+ *                   longitude: "-74.0060"
  *       400:
  *         description: An error response if there's an issue with the request.
  *         content:
@@ -148,6 +168,8 @@ module.exports = router;
  *                 id: "123"
  *                 name: "RSU1"
  *                 recommended_speed: "60"
+ *                 latitude: "40.7128"
+ *                 longitude: "-74.0060"
  *       404:
  *         description: An error response if the requested RSU is not found.
  *         content:
@@ -179,6 +201,8 @@ module.exports = router;
  *           example:
  *             name: "RSU1"
  *             recommended_speed: "60"
+ *             latitude: "40.7128"
+ *             longitude: "-74.0060"
  *           schema:
  *             type: object
  *             properties:
@@ -186,9 +210,15 @@ module.exports = router;
  *                 type: string
  *               recommended_speed:
  *                 type: string
+ *               latitude:
+ *                 type: string
+ *               longitude:
+ *                 type: string
  *             required:
  *               - name
  *               - recommended_speed
+ *               - latitude
+ *               - longitude
  *     responses:
  *       201:
  *         description: The newly created RSU.
@@ -200,6 +230,8 @@ module.exports = router;
  *                 id: "123"
  *                 name: "RSU1"
  *                 recommended_speed: "60"
+ *                 latitude: "40.7128"
+ *                 longitude: "-74.0060"
  *       400:
  *         description: An error response if there's an issue with the request.
  *         content:
@@ -209,8 +241,12 @@ module.exports = router;
  *               error:
  *                 - "Please add a name"
  *                 - "Please add a recommended speed"
+ *                 - "Please add a latitude"
+ *                 - "Please add a longitude"
  *                 - "Name should not contain spaces"
  *                 - "Recommended speed should be a valid number"
+ *                 - "Latitude should be a coordinate number"
+ *                 - "Longitude should be a coordinate number"
  *                 - "Name already exists"
  */
 
@@ -235,12 +271,18 @@ module.exports = router;
  *           example:
  *             name: "RSU1"
  *             recommended_speed: "60"
+ *             latitude: "40.7128"
+ *             longitude: "-74.0060"
  *           schema:
  *             type: object
  *             properties:
  *               name:
  *                 type: string
  *               recommended_speed:
+ *                 type: string
+ *               latitude:
+ *                 type: string
+ *               longitude:
  *                 type: string
  *     responses:
  *       200:
@@ -253,6 +295,8 @@ module.exports = router;
  *                 id: "123"
  *                 name: "UpdatedRSU"
  *                 recommended_speed: "75"
+ *                 latitude: "40.7128"
+ *                 longitude: "-74.0060"
  *       400:
  *         description: An error response if there's an issue with the request.
  *         content:
@@ -262,6 +306,8 @@ module.exports = router;
  *               error:
  *                 - "Name should not contain spaces"
  *                 - "Recommended speed should be a valid number"
+ *                 - "Latitude should be a coordinate number"
+ *                 - "Longitude should be a coordinate number"
  *                 - "Name already exists"
  *       404:
  *         description: An error response if the RSU with the specified ID is not found.
