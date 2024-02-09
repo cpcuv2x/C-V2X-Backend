@@ -7,6 +7,9 @@ async function connectRabbitMQ() {
 		throw new Error('RABBITMQ_URL env is undefined');
 	}
 	connection = await amqp.connect(process.env.RABBITMQ_HOST);
+	connection.on('error', (err) => {
+		console.log('RabbitMQ connection error', err);
+	});
 }
 
 async function publishToQueue(queueName, data) {
