@@ -7,11 +7,17 @@ async function connectRabbitMQ() {
 		throw new Error('RABBITMQ_URL env is undefined');
 	}
 	connection = await amqp.connect(process.env.RABBITMQ_HOST);
+	connection.on('error', (err) => {
+		console.error('RabbitMQ connection', err);
+	});
 }
 
 async function publishToQueue(queueName, data) {
 	try {
 		const channel = await connection.createChannel();
+		channel.on('error', (err) => {
+			console.error('RabbitMQ channel', err);
+		});
 		await channel.assertQueue(queueName, true);
 		channel.sendToQueue(queueName, Buffer.from(data));
 	} catch (error) {
