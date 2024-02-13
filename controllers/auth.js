@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Car = require('../models/Car');
 
 //@desc     Login user
 //@route    POST /api/auth/login
@@ -39,10 +40,18 @@ exports.login = async (req, res, next) => {
 		secure: true,
 	};
 
+	const car =
+		user.driver_id && (await Car.findOne({ driver_id: user.driver_id }));
+	const car_id = car?._id;
+
 	res.cookie('token', token, options);
 	return res.status(200).json({
 		success: true,
-		token,
+		data: {
+			token,
+			role: user.role,
+			car_id,
+		},
 	});
 };
 
