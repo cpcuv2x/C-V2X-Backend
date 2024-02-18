@@ -22,10 +22,10 @@ function fleetController(io) {
 		const { id, type } = data;
 		if (type === 'RSU') {
 			const reports = await Report.find({ rsu_id: id });
-			// publishToQueue('report', reports);
+			publishToQueue('report', reports);
 
 			const rsu = await RSU.findById(id);
-			// publishToQueue('reccommended_speed', rsu.recommended_speed);
+			publishToQueue('reccommended_speed', rsu.recommended_speed);
 		}
 	});
 
