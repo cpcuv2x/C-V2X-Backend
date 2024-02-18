@@ -5,9 +5,28 @@ const {
 const Report = require('../models/Report');
 const RSU = require('../models/RSU');
 
-function fleetController(io) {
-	consumeQueue({ queueName: 'location' }, (msg) => {
+async function fleetController(io) {
+	consumeQueue({ queueName: 'location' }, async (msg) => {
 		const data = JSON.parse(msg.content.toString());
+		if (data.type === 'RSU') {
+			const rsu = await RSU.findById(data.id);
+			if (
+				rsu.latitude.toString() !== data.latitude.toString() ||
+				rsu.longitude.toString() !== data.longitude.toString()
+			) {
+				await RSU.findByIdAndUpdate(
+					data.id,
+					{
+						latitude: data.latitude.toString(),
+						longitude: data.longitude.toString(),
+					},
+					{
+						new: true,
+						runValidators: true,
+					}
+				);
+			}
+		}
 		io.emit('location', data);
 	});
 
@@ -22,10 +41,10 @@ function fleetController(io) {
 		const { id, type } = data;
 		if (type === 'RSU') {
 			const reports = await Report.find({ rsu_id: id });
-			publishToQueue('report', reports);
+			// publishToQueue('report', reports);
 
 			const rsu = await RSU.findById(id);
-			publishToQueue('reccommended_speed', rsu.recommended_speed);
+			// publishToQueue('reccommended_speed', rsu.recommended_speed);
 		}
 	});
 
