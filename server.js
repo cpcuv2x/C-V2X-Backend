@@ -40,13 +40,20 @@ const SOCKET_PORT = process.env.SOCKET_PORT || 3426;
 connectMongoDB();
 
 // Create socket server
-const socket = http.createServer({
+const socket = http.createServer();
+const io = socketIO(socket, {
 	cors: {
 		origin: '*',
 		methods: ['GET', 'POST'],
 	},
 });
-const io = socketIO(socket);
+
+// Connect to rabbitMQ
+connectRabbitMQ().then(() => {
+	fleetController(io);
+	createEmergencyFromRabbitMQ(io);
+});
+setupWebRTCSocketIO(io);
 
 // Create app server
 const app = express();
@@ -75,7 +82,7 @@ socket.listen(
 );
 
 // Map app server to port
-const server = app.listen(
+const appServer = app.listen(
 	APP_PORT,
 	console.log(
 		'Server running in',
@@ -85,16 +92,9 @@ const server = app.listen(
 	)
 );
 
-// Connect to rabbitMQ
-connectRabbitMQ().then(() => {
-	fleetController(io);
-	createEmergencyFromRabbitMQ(io);
-});
-setupWebRTCSocketIO(server);
-
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
 	console.log(`Error: ${err.message}`);
 	// Close server & exit process
-	server.close(() => process.exit(1));
+	appServer.close(() => process.exit(1));
 });
