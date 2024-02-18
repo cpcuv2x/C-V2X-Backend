@@ -1,4 +1,7 @@
-const { consumeQueue, publishToQueue } = require('../utils/rabbitMQConnection');
+const {
+	consumeQueue,
+	publishToQueue,
+} = require('../config/rabbitMQConnection');
 const Report = require('../models/Report');
 const RSU = require('../models/RSU');
 

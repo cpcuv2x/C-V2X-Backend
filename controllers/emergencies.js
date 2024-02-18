@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { consumeQueue } = require('../utils/rabbitMQConnection');
+const { consumeQueue } = require('../config/rabbitMQConnection');
 const Emergency = require('../models/Emergency');
 const Car = require('../models/Car');
 const { emergencyRegex } = require('../utils/regex');
