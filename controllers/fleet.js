@@ -4,6 +4,7 @@ const {
 } = require('../config/rabbitMQConnection');
 const Report = require('../models/Report');
 const RSU = require('../models/RSU');
+const mongoose = require('mongoose');
 
 async function fleetController(io) {
 	consumeQueue({ queueName: 'location' }, async (msg) => {
@@ -37,14 +38,38 @@ async function fleetController(io) {
 
 	consumeQueue({ queueName: 'heartbeat' }, async (msg) => {
 		const data = JSON.parse(msg.content.toString());
-		io.emit('heartbeat', data);
+		// io.emit('heartbeat', data);
 		const { id, type } = data;
 		if (type === 'RSU') {
-			const reports = await Report.find({ rsu_id: id });
-			// publishToQueue('report', reports);
+			const reports = await Report.aggregate([
+				{
+					$match: { rsu_id: new mongoose.Types.ObjectId(id) },
+				},
+				{
+					$project: {
+						_id: 0,
+						rsu_id: 1,
+						type: 1,
+						latitude: 1,
+						longitude: 1,
+						timestamp: '$createdAt',
+					},
+				},
+			]);
+			if (reports && reports.length > 0) {
+				publishToQueue(`reports_${id}`, JSON.stringify(reports));
+			}
 
 			const rsu = await RSU.findById(id);
-			// publishToQueue('reccommended_speed', rsu.recommended_speed);
+			publishToQueue(
+				`rec_speed_${id}`,
+				JSON.stringify({
+					rsu_id: id,
+					recommend_speed: parseFloat(rsu.recommended_speed),
+					unit: 'km/h',
+					timestamp: new Date(),
+				})
+			);
 		}
 	});
 
@@ -61,6 +86,10 @@ async function fleetController(io) {
 				throw new Error('Error creating new report: Please add a latitude');
 			if (!longitude)
 				throw new Error('Error creating new report: Please add a longitude');
+			if (!reportRegex.test(type))
+				throw new Error(
+					"Error creating new report: Type should be 'ACCIDENT', 'CLOSED ROAD', 'CONSTRUCTION', or 'TRAFFIC CONGESTION'"
+				);
 			const rsu = await RSU.findById(rsu_id);
 			if (!rsu) throw new Error('Error creating new report: RSU not found');
 			if (typeof latitude !== 'number')

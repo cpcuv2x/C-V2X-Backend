@@ -10,6 +10,7 @@ async function connectRabbitMQ() {
 	connection.on('error', (err) => {
 		console.log('RabbitMQ connection error', err);
 	});
+	console.log('RabbitMQ connected');
 }
 
 async function publishToQueue(queueName, data) {
