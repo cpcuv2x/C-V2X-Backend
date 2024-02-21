@@ -6,15 +6,20 @@ const Report = require('../models/Report');
 const RSU = require('../models/RSU');
 const mongoose = require('mongoose');
 
-async function fleetController(io) {
+function consumeLocation(io) {
 	consumeQueue({ queueName: 'location' }, async (msg) => {
 		const data = JSON.parse(msg.content.toString());
-		if (data.latitude === undefined || data.longitude === undefined) return;
+		io.emit('location', data);
 		if (data.type === 'RSU') {
-			const rsu = await RSU.findById(data.id);
+			const rsu = await findOne({ _id: new mongoose.Types.ObjectId(data.id) });
+
+			// check is location change
 			if (
-				rsu.latitude.toString() !== data.latitude.toString() ||
-				rsu.longitude.toString() !== data.longitude.toString()
+				rsu &&
+				data.latitude &&
+				data.longitude &&
+				(rsu.latitude.toString() !== data.latitude.toString() ||
+					rsu.longitude.toString() !== data.longitude.toString())
 			) {
 				await RSU.findByIdAndUpdate(
 					data.id,
@@ -29,14 +34,10 @@ async function fleetController(io) {
 				);
 			}
 		}
-		io.emit('location', data);
 	});
+}
 
-	consumeQueue({ queueName: 'car_speed' }, (msg) => {
-		const data = JSON.parse(msg.content.toString());
-		io.emit('car_speed', data);
-	});
-
+function consumeHeartbeat(io) {
 	consumeQueue({ queueName: 'heartbeat' }, async (msg) => {
 		const data = JSON.parse(msg.content.toString());
 		io.emit('heartbeat', data);
@@ -61,17 +62,29 @@ async function fleetController(io) {
 				publishToQueue(`reports_${id}`, JSON.stringify(reports));
 			}
 
-			const rsu = await RSU.findById(id);
-			publishToQueue(
-				`rec_speed_${id}`,
-				JSON.stringify({
-					rsu_id: id,
-					recommend_speed: parseFloat(rsu.recommended_speed),
-					unit: 'km/h',
-					timestamp: new Date(),
-				})
-			);
+			const rsu = await findOne({ _id: new mongoose.Types.ObjectId(id) });
+			if (rsu) {
+				publishToQueue(
+					`rec_speed_${id}`,
+					JSON.stringify({
+						rsu_id: id,
+						recommend_speed: parseFloat(rsu.recommended_speed),
+						unit: 'km/h',
+						timestamp: new Date(),
+					})
+				);
+			}
 		}
+	});
+}
+
+async function fleetController(io) {
+	consumeLocation(io);
+	consumeHeartbeat(io);
+
+	consumeQueue({ queueName: 'car_speed' }, (msg) => {
+		const data = JSON.parse(msg.content.toString());
+		io.emit('car_speed', data);
 	});
 
 	consumeQueue({ queueName: 'new_report' }, async (msg) => {
