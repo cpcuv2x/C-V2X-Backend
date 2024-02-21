@@ -1,6 +1,7 @@
 const amqp = require('amqplib');
 
 let connection;
+const exchange = 'direct_logs';
 
 async function connectRabbitMQ() {
 	if (!process.env.RABBITMQ_HOST) {
@@ -16,6 +17,9 @@ async function connectRabbitMQ() {
 async function publishToQueue(queueName, data) {
 	try {
 		const channel = await connection.createChannel();
+		channel.on('error', (err) => {
+			console.error('RabbitMQ channel', err);
+		});
 		await channel.assertQueue(queueName, true);
 		channel.sendToQueue(queueName, Buffer.from(data));
 	} catch (error) {
@@ -24,12 +28,15 @@ async function publishToQueue(queueName, data) {
 }
 
 async function consumeQueue(
-	{ queueName, durable = false, noAck = true },
+	{ queueName, routingKey = [], durable = false, noAck = true },
 	callback
 ) {
 	try {
 		const channel = await connection.createChannel();
 		await channel.assertQueue(queueName, { durable: durable });
+		routingKey.forEach(async (key) => {
+			await channel.bindQueue(queueName, exchange, key);
+		});
 		channel.consume(
 			queueName,
 			(msg) => {
@@ -41,7 +48,7 @@ async function consumeQueue(
 			{ noAck: noAck }
 		);
 	} catch (error) {
-		throw new Error(`Error consuming queue: ${error.message} ${error}`);
+		throw new Error(`consuming queue - ${error.message} ${error}`);
 	}
 }
 

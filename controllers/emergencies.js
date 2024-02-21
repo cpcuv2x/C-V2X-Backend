@@ -154,7 +154,12 @@ exports.createEmergency = async (req, res, next) => {
 
 exports.createEmergencyFromRabbitMQ = (socket) => {
 	consumeQueue(
-		{ queueName: 'emergency', durable: true, noAck: false },
+		{
+			queueName: 'emergency',
+			routingKey: ['emergency_obu'],
+			durable: true,
+			noAck: false,
+		},
 		async (msg) => {
 			try {
 				const { car_id, status, latitude, longitude } = JSON.parse(
