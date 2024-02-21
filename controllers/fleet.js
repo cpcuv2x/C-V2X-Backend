@@ -11,7 +11,9 @@ function consumeLocation(io) {
 		const data = JSON.parse(msg.content.toString());
 		io.emit('location', data);
 		if (data.type === 'RSU') {
-			const rsu = await findOne({ _id: new mongoose.Types.ObjectId(data.id) });
+			const rsu = await RSU.findOne({
+				_id: new mongoose.Types.ObjectId(data.id),
+			});
 
 			// check is location change
 			if (
@@ -62,7 +64,7 @@ function consumeHeartbeat(io) {
 				publishToQueue(`reports_${id}`, JSON.stringify(reports));
 			}
 
-			const rsu = await findOne({ _id: new mongoose.Types.ObjectId(id) });
+			const rsu = await RSU.findOne({ _id: new mongoose.Types.ObjectId(id) });
 			if (rsu) {
 				publishToQueue(
 					`rec_speed_${id}`,
