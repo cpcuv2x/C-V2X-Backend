@@ -141,7 +141,6 @@ exports.createEmergency = async (req, res, next) => {
 			latitude: emergency.latitude,
 			longitude: emergency.longitude,
 		};
-		console.log('hi');
 		req.socket.emit('emergency', data);
 		return res.status(201).json({
 			success: true,
