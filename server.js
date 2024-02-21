@@ -94,7 +94,7 @@ const appServer = app.listen(
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
-	console.log(`Error: ${err.message}`);
+	console.log(`Error: ${err.stack}`);
 	// Close server & exit process
 	appServer.close(() => process.exit(1));
 });
