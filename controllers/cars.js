@@ -377,11 +377,18 @@ exports.createCar = async (req, res, next) => {
 		const driverExists = await Driver.exists({
 			_id: new mongoose.Types.ObjectId(driver_id),
 		});
-
 		if (!driverExists) {
 			return res
 				.status(404)
 				.json({ success: false, error: 'The driver not found' });
+		}
+
+		const driverCarExists = await Car.exists({ driver_id: driver_id });
+		if (driverCarExists) {
+			return res.status(400).json({
+				success: false,
+				error: 'Driver is already registered to another car',
+			});
 		}
 
 		carData = req.body;
@@ -436,11 +443,18 @@ exports.updateCar = async (req, res, next) => {
 		const driverExists = await Driver.exists({
 			_id: new mongoose.Types.ObjectId(driver_id),
 		});
-
 		if (!driverExists) {
 			return res
-				.status(400)
+				.status(404)
 				.json({ success: false, error: 'The driver not found' });
+		}
+
+		const driverCarExists = await Car.exists({ driver_id: driver_id });
+		if (driverCarExists) {
+			return res.status(400).json({
+				success: false,
+				error: 'Driver is already registered to another car',
+			});
 		}
 
 		carData = req.body;

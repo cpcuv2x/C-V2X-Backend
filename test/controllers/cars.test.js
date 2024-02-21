@@ -30,7 +30,7 @@ const firstId = async () => {
 	const ids = await getCurrentData(Car, ['id']);
 	return ids[0];
 };
-const retrieveCars = async () => {
+const getCarsData = async () => {
 	const cameras = (
 		await getCurrentData(Camera, ['id', 'name', 'position'])
 	).sort((a, b) => a.name.localeCompare(b.name));
@@ -39,6 +39,7 @@ const retrieveCars = async () => {
 		.map((car, index) => ({
 			...car,
 			driver: `${mockedDrivers[index].first_name} ${mockedDrivers[index].last_name}`,
+			driver_phone_no: mockedDrivers[index].phone_no,
 			cameras:
 				index === 0
 					? [
@@ -82,52 +83,61 @@ const mockedDrivers = [
 		last_name: 'KonDee03',
 		phone_no: '333-333-3333',
 	},
+	{
+		first_name: 'Somchai04',
+		last_name: 'KonDee04',
+		phone_no: '444-444-4444',
+	},
 ];
 
 describe('Car Controllers', () => {
 	beforeEach(async () => {
 		await Driver.create(mockedDrivers);
-		const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-			(a, b) => a.first_name.localeCompare(b.first_name)
-		);
+
+		const driver1 = await Driver.findOne({ first_name: 'Somchai01' });
+		const driver2 = await Driver.findOne({ first_name: 'Somchai02' });
+		const driver3 = await Driver.findOne({ first_name: 'Somchai03' });
+
 		await Car.create([
 			{
 				name: 'Car01',
 				license_plate: 'LicensePlate01',
 				model: 'Model01',
-				driver_id: drivers[0].id,
+				driver_id: driver1._id,
 			},
 			{
 				name: 'Car02',
 				license_plate: 'LicensePlate02',
 				model: 'Model02',
-				driver_id: drivers[1].id,
+				driver_id: driver2._id,
 			},
 			{
 				name: 'Car03',
 				license_plate: 'LicensePlate03',
 				model: 'Model03',
-				driver_id: drivers[2].id,
+				driver_id: driver3._id,
 			},
 		]);
-		const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-			a.name.localeCompare(b.name)
-		);
+
+		const car1 = await Car.findOne({ name: 'Car01' });
+		const car2 = await Car.findOne({ name: 'Car02' });
+		const car3 = await Car.findOne({ name: 'Car03' });
+
 		await Camera.create([
 			{
 				name: 'Camera01',
 				position: 'Front',
-				car_id: cars[0].id,
+				car_id: car1._id,
 			},
 			{
 				name: 'Camera02',
 				position: 'Back',
-				car_id: cars[1].id,
+				car_id: car2._id,
 			},
 			{
 				name: 'Camera03',
 				position: 'Front',
-				car_id: cars[2].id,
+				car_id: car3._id,
 			},
 		]);
 	});
@@ -142,7 +152,7 @@ describe('Car Controllers', () => {
 
 	describe('getCars', () => {
 		it('should return all cars, when there is no filter', async () => {
-			const expectedData = await retrieveCars();
+			const expectedData = await getCarsData();
 
 			await executeGetTest(
 				getCars,
@@ -152,7 +162,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should return cars filtered by id, when there is a id filter', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -163,7 +173,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should return cars filtered by name, when there is a name filter', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -174,7 +184,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should return cars filtered by front_cam_id, when there is a front_cam_id filter', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const cameras = (
 				await getCurrentData(Camera, ['id', 'name', 'position'])
 			).sort((a, b) => a.name.localeCompare(b.name));
@@ -190,7 +200,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should return cars filtered by back_cam_id, when there is a back_cam_id filter', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const cameras = (
 				await getCurrentData(Camera, ['id', 'name', 'position'])
 			).sort((a, b) => a.name.localeCompare(b.name));
@@ -204,7 +214,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should return cars filtered by license_plate, when there is a license_plate filter', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -215,7 +225,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should return cars filtered by model, when there is a model filter', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -226,7 +236,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should return cars filtered by driver_id, when there is a driver_id filter', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -237,7 +247,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should return cars filtered by id & name & front_cam_id & back_cam_id & license_plate & model & driver_id, when there are id & name & front_cam_id & back_cam_id & license_plate & model & driver_id exist', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const cameras = (
 				await getCurrentData(Camera, ['id', 'name', 'position'])
 			).sort((a, b) => a.name.localeCompare(b.name));
@@ -259,7 +269,7 @@ describe('Car Controllers', () => {
 		});
 
 		it('should return no car filtered by id & name & front_cam_id & back_cam_id & license_plate & model & driver_id, when there are id & name & front_cam_id & back_cam_id & license_plate & model & driver_id not exist', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const cameras = (
 				await getCurrentData(Camera, ['id', 'name', 'position'])
 			).sort((a, b) => a.name.localeCompare(b.name));
@@ -349,7 +359,7 @@ describe('Car Controllers', () => {
 
 	describe('getCar', () => {
 		it('should return a single car by valid & exist ID', async () => {
-			const rawData = await retrieveCars();
+			const rawData = await getCarsData();
 			const expectedData = rawData[0];
 
 			await executeGetTest(
@@ -400,14 +410,12 @@ describe('Car Controllers', () => {
 
 	describe('createCar', () => {
 		it('should create the car, when request is valid', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const newCar = {
 				name: 'Car04',
 				license_plate: 'LicensePlate04',
 				model: 'Model04',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeCreateTest(
@@ -419,13 +427,11 @@ describe('Car Controllers', () => {
 		});
 
 		it('should not create the car, when name is missing', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const newCar = {
 				license_plate: 'LicensePlate04',
 				model: 'Model04',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeCreateTest(
@@ -439,13 +445,11 @@ describe('Car Controllers', () => {
 		});
 
 		it('should not create the car, when license_plate is missing', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const newCar = {
 				name: 'Car04',
 				model: 'Model04',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeCreateTest(
@@ -459,13 +463,11 @@ describe('Car Controllers', () => {
 		});
 
 		it('should not create the car, when model is missing', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const newCar = {
 				name: 'Car04',
 				license_plate: 'LicensePlate04',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeCreateTest(
@@ -494,14 +496,12 @@ describe('Car Controllers', () => {
 		});
 
 		it('should not create the car, when name is invalid', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const newCar = {
 				name: 'Car 4',
 				license_plate: 'LicensePlate04',
 				model: 'Model04',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeCreateTest(
@@ -515,14 +515,12 @@ describe('Car Controllers', () => {
 		});
 
 		it('should not create the car, when name is duplicated', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const newCar = {
 				name: 'Car01',
 				license_plate: 'LicensePlate04',
 				model: 'Model04',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeCreateTest(
@@ -553,6 +551,25 @@ describe('Car Controllers', () => {
 			);
 		});
 
+		it('should not create the car, when driver_id is already used', async () => {
+			const driver1 = await Driver.findOne({ first_name: 'Somchai01' });
+			const newCar = {
+				name: 'Car04',
+				license_plate: 'LicensePlate04',
+				model: 'Model04',
+				driver_id: driver1._id,
+			};
+
+			await executeCreateTest(
+				createCar,
+				Car,
+				CarField,
+				generateRequest(newCar),
+				400,
+				'Driver is already registered to another car'
+			);
+		});
+
 		it('should handle errors and return 400 status', async () => {
 			const newCar = {
 				name: 'Car04',
@@ -578,14 +595,12 @@ describe('Car Controllers', () => {
 
 	describe('updateCar', () => {
 		it('should update the car, when request is valid', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const updatedRequest = {
 				name: 'Car05',
 				license_plate: 'LicensePlate05',
 				model: 'Model05',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeUpdateTest(
@@ -597,13 +612,11 @@ describe('Car Controllers', () => {
 		});
 
 		it('should update the car, when name is missing', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const updatedRequest = {
 				license_plate: 'LicensePlate05',
 				model: 'Model05',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeUpdateTest(
@@ -615,13 +628,11 @@ describe('Car Controllers', () => {
 		});
 
 		it('should update the car, when license_plate is missing', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const updatedRequest = {
 				name: 'Car05',
 				model: 'Model05',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeUpdateTest(
@@ -633,13 +644,11 @@ describe('Car Controllers', () => {
 		});
 
 		it('should update the car, when model is missing', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const updatedRequest = {
 				name: 'Car05',
 				license_plate: 'LicensePlate05',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeUpdateTest(
@@ -666,14 +675,12 @@ describe('Car Controllers', () => {
 		});
 
 		it('should not update the car, when name is invalid', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const updatedRequest = {
 				name: 'Car 5',
 				license_plate: 'LicensePlate05',
 				model: 'Model05',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeUpdateTest(
@@ -687,14 +694,12 @@ describe('Car Controllers', () => {
 		});
 
 		it('should not update the car, when name is duplicated', async () => {
-			const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-				(a, b) => a.first_name.localeCompare(b.first_name)
-			);
+			const driver4 = await Driver.findOne({ first_name: 'Somchai04' });
 			const updatedRequest = {
 				name: 'Car02',
 				license_plate: 'LicensePlate05',
 				model: 'Model05',
-				driver_id: drivers[0].id,
+				driver_id: driver4._id,
 			};
 
 			await executeUpdateTest(
@@ -720,8 +725,27 @@ describe('Car Controllers', () => {
 				Car,
 				CarField,
 				generateRequest(updatedRequest, await firstId()),
-				400,
+				404,
 				'The driver not found'
+			);
+		});
+
+		it('should not update the car, when driver_id is already used', async () => {
+			const driver1 = await Driver.findOne({ first_name: 'Somchai01' });
+			const updatedRequest = {
+				name: 'Car05',
+				license_plate: 'LicensePlate05',
+				model: 'Model05',
+				driver_id: driver1._id,
+			};
+
+			await executeUpdateTest(
+				updateCar,
+				Car,
+				CarField,
+				generateRequest(updatedRequest, await firstId()),
+				400,
+				'Driver is already registered to another car'
 			);
 		});
 
@@ -792,7 +816,11 @@ describe('Car Controllers', () => {
 				id: (await Camera.findOne({ car_id: carId.id }))._id.toString(),
 			};
 			const emergencyId = {
-				id: await Emergency.create({ car_id: carId.id }),
+				id: await Emergency.create({
+					car_id: carId.id,
+					latitude: '0',
+					longitude: '0',
+				}),
 			};
 
 			await executeDeleteTest(

@@ -27,7 +27,7 @@ const firstId = async () => {
 	const ids = await getCurrentData(Camera, ['id']);
 	return ids[0];
 };
-const retrieveCameras = async () => {
+const getCamerasData = async () => {
 	return (await getCurrentData(Camera, CameraField))
 		.sort((a, b) => a.name.localeCompare(b.name))
 		.map((camera, index) => ({
@@ -62,24 +62,26 @@ const mockedCars = [
 describe('Camera Controllers', () => {
 	beforeEach(async () => {
 		await Car.create(mockedCars);
-		const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-			a.name.localeCompare(b.name)
-		);
+
+		const car1 = await Car.findOne({ name: 'Car01' });
+		const car2 = await Car.findOne({ name: 'Car02' });
+		const car3 = await Car.findOne({ name: 'Car03' });
+
 		await Camera.create([
 			{
 				name: 'Camera01',
 				position: 'Front',
-				car_id: cars[0].id,
+				car_id: car1._id,
 			},
 			{
 				name: 'Camera02',
 				position: 'Back',
-				car_id: cars[1].id,
+				car_id: car2._id,
 			},
 			{
 				name: 'Camera03',
 				position: 'Front',
-				car_id: cars[2].id,
+				car_id: car3._id,
 			},
 		]);
 	});
@@ -92,7 +94,7 @@ describe('Camera Controllers', () => {
 
 	describe('getCameras', () => {
 		it('should return all cameras, when there is no filter', async () => {
-			const expectedData = await retrieveCameras();
+			const expectedData = await getCamerasData();
 
 			await executeGetTest(
 				getCameras,
@@ -102,7 +104,7 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should return cameras filtered by id, when there is a id filter', async () => {
-			const rawData = await retrieveCameras();
+			const rawData = await getCamerasData();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -113,7 +115,7 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should return cameras filtered by name, when there is a name filter', async () => {
-			const rawData = await retrieveCameras();
+			const rawData = await getCamerasData();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -124,7 +126,7 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should return cameras filtered by position, when there is a position filter', async () => {
-			const rawData = await retrieveCameras();
+			const rawData = await getCamerasData();
 			const expectedData = [rawData[0], rawData[2]];
 
 			await executeGetTest(
@@ -135,7 +137,7 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should return cameras filtered by car_id, when there is a car_id filter', async () => {
-			const rawData = await retrieveCameras();
+			const rawData = await getCamerasData();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -146,7 +148,7 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should return cameras filtered by id & name & position & car_id, when there are id & name & position & car_id exist', async () => {
-			const rawData = await retrieveCameras();
+			const rawData = await getCamerasData();
 			const expectedData = [rawData[0]];
 
 			await executeGetTest(
@@ -162,7 +164,7 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should return no camera filtered by id & name & position & car_id, when there are id & name & position & car_id not exist', async () => {
-			const rawData = await retrieveCameras();
+			const rawData = await getCamerasData();
 			const expectedData = [];
 
 			await executeGetTest(
@@ -246,7 +248,7 @@ describe('Camera Controllers', () => {
 
 	describe('getCamera', () => {
 		it('should return a single camera by valid & exist ID', async () => {
-			const rawData = await retrieveCameras();
+			const rawData = await getCamerasData();
 			const expectedData = rawData[0];
 
 			await executeGetTest(
@@ -297,13 +299,11 @@ describe('Camera Controllers', () => {
 
 	describe('createCamera', () => {
 		it('should create the camera, when request is valid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const newCamera = {
 				name: 'Camera04',
 				position: 'Back',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeCreateTest(
@@ -315,12 +315,10 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should not create the camera, when name is missing', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const newCamera = {
 				position: 'Back',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeCreateTest(
@@ -350,12 +348,10 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should not create the camera, when position is missing', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const newCamera = {
 				name: 'Camera04',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeCreateTest(
@@ -369,13 +365,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should not create the camera, when name is invalid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const newCamera = {
 				name: 'Camera 4',
 				position: 'Back',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeCreateTest(
@@ -389,13 +383,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should not create the camera, when name is duplicated', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const newCamera = {
 				name: 'Camera01',
 				position: 'Back',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeCreateTest(
@@ -426,13 +418,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should not create the camera, when position is invalid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const newCamera = {
 				name: 'Camera04',
 				position: 'invalid',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeCreateTest(
@@ -446,13 +436,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should not create the camera, when position is duplicated', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car2 = await Car.findOne({ name: 'Car02' });
 			const newCamera = {
 				name: 'Camera04',
 				position: 'Back',
-				car_id: cars[1].id,
+				car_id: car2._id,
 			};
 
 			await executeCreateTest(
@@ -466,13 +454,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should handle errors and return 400 status', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const newCamera = {
 				name: 'Camera04',
 				position: 'Back',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 			const message = 'Error Message';
 			sinon.stub(Camera, 'create').throws(new Error(message));
@@ -493,13 +479,11 @@ describe('Camera Controllers', () => {
 
 	describe('updateCamera', () => {
 		it('should update the camera, when request is valid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const updatedRequest = {
 				name: 'Camera05',
 				position: 'Front',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeUpdateTest(
@@ -511,12 +495,10 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should update the camera, when name is missing', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const updatedRequest = {
 				position: 'Front',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeUpdateTest(
@@ -528,12 +510,10 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should update the camera, when position is missing', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const updatedRequest = {
 				name: 'Camera05',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeUpdateTest(
@@ -559,13 +539,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should not update the camera, when name is invalid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const updatedRequest = {
 				name: 'Camera 5',
 				position: 'Front',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeUpdateTest(
@@ -596,13 +574,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should not update the camera, when position is invalid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const updatedRequest = {
 				name: 'Camera05',
 				position: 'invalid',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeUpdateTest(
@@ -615,14 +591,12 @@ describe('Camera Controllers', () => {
 			);
 		});
 
-		it('should update the camera, when name is duplicated', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+		it('should not update the camera, when name is duplicated', async () => {
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const updatedRequest = {
-				name: 'Camera01',
+				name: 'Camera02',
 				position: 'Front',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 
 			await executeUpdateTest(
@@ -635,14 +609,12 @@ describe('Camera Controllers', () => {
 			);
 		});
 
-		it('should update the camera, when position is duplicated', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+		it('should not update the camera, when position is duplicated', async () => {
+			const car2 = await Car.findOne({ name: 'Car02' });
 			const updatedRequest = {
 				name: 'Camera05',
-				position: 'Front',
-				car_id: cars[0].id,
+				position: 'Back',
+				car_id: car2._id,
 			};
 
 			await executeUpdateTest(
@@ -656,13 +628,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should handle valid & not exist ID and return 404 status', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const updatedRequest = {
 				name: 'Camera05',
 				position: 'Front',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 			const message = 'The camera not found';
 
@@ -677,13 +647,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should handle invalid ID and return 400 status', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const updatedRequest = {
 				name: 'Camera05',
 				position: 'Front',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 			const message =
 				'Cast to ObjectId failed for value "invalid" (type string) at path "_id" for model "Camera"';
@@ -699,13 +667,11 @@ describe('Camera Controllers', () => {
 		});
 
 		it('should handle errors and return 400 status', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car4 = await Car.findOne({ name: 'Car04' });
 			const updatedRequest = {
 				name: 'Camera05',
 				position: 'Front',
-				car_id: cars[3].id,
+				car_id: car4._id,
 			};
 			const message = 'Error Message';
 			sinon.stub(Camera, 'findByIdAndUpdate').throws(new Error(message));

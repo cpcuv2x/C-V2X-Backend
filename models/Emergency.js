@@ -12,11 +12,11 @@ const EmergencySchema = new mongoose.Schema({
 	},
 	latitude: {
 		type: Number,
-		default: null,
+		required: [true, 'Please add a latitude'],
 	},
 	longitude: {
 		type: Number,
-		default: null,
+		required: [true, 'Please add a longitude'],
 	},
 	createdAt: {
 		type: Date,

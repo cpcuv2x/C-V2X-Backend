@@ -9,6 +9,14 @@ const RSUSchema = new mongoose.Schema({
 		type: String,
 		required: [true, 'Please add a recommended speed'],
 	},
+	latitude: {
+		type: String,
+		required: [true, 'Please add a latitude'],
+	},
+	longitude: {
+		type: String,
+		required: [true, 'Please add a longitude'],
+	},
 	createdAt: {
 		type: Date,
 		default: Date.now,
