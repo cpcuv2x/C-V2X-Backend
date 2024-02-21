@@ -38,7 +38,7 @@ async function fleetController(io) {
 
 	consumeQueue({ queueName: 'heartbeat' }, async (msg) => {
 		const data = JSON.parse(msg.content.toString());
-		// io.emit('heartbeat', data);
+		io.emit('heartbeat', data);
 		const { id, type } = data;
 		if (type === 'RSU') {
 			const reports = await Report.aggregate([
