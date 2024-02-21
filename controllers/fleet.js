@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 async function fleetController(io) {
 	consumeQueue({ queueName: 'location' }, async (msg) => {
 		const data = JSON.parse(msg.content.toString());
+		if (data.latitude === undefined || data.longitude === undefined) return;
 		if (data.type === 'RSU') {
 			const rsu = await RSU.findById(data.id);
 			if (
