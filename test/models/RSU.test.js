@@ -6,6 +6,8 @@ describe('RSU Model Validation', () => {
 		const rsuData = {
 			name: 'Test RSU',
 			recommended_speed: '100',
+			latitude: '123.456',
+			longitude: '-45.678',
 		};
 
 		const rsu = new RSU(rsuData);
@@ -18,6 +20,8 @@ describe('RSU Model Validation', () => {
 	it('should be invalid if name is empty', async () => {
 		const rsu = new RSU({
 			recommended_speed: '100',
+			latitude: '123.456',
+			longitude: '-45.678',
 		});
 		try {
 			await rsu.validate();
@@ -32,6 +36,8 @@ describe('RSU Model Validation', () => {
 	it('should be invalid if recommended_speed is empty', async () => {
 		const rsu = new RSU({
 			name: 'Test RSU',
+			latitude: '123.456',
+			longitude: '-45.678',
 		});
 		try {
 			await rsu.validate();
@@ -39,6 +45,38 @@ describe('RSU Model Validation', () => {
 		} catch (error) {
 			expect(error.errors.recommended_speed.properties.message).to.equal(
 				'Please add a recommended speed'
+			);
+		}
+	});
+
+	it('should be invalid if latitude is empty', async () => {
+		const rsu = new RSU({
+			name: 'Test RSU',
+			recommended_speed: '100',
+			longitude: '-45.678',
+		});
+		try {
+			await rsu.validate();
+			expect.fail('Validation should have failed');
+		} catch (error) {
+			expect(error.errors.latitude.properties.message).to.equal(
+				'Please add a latitude'
+			);
+		}
+	});
+
+	it('should be invalid if longitude is empty', async () => {
+		const rsu = new RSU({
+			name: 'Test RSU',
+			recommended_speed: '100',
+			latitude: '-45.678',
+		});
+		try {
+			await rsu.validate();
+			expect.fail('Validation should have failed');
+		} catch (error) {
+			expect(error.errors.longitude.properties.message).to.equal(
+				'Please add a longitude'
 			);
 		}
 	});

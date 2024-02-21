@@ -43,21 +43,22 @@ describe('Emergency Controllers', () => {
 	let createdTime;
 	beforeEach(async () => {
 		await Driver.create(mockedDriver);
-		const drivers = (await getCurrentData(Driver, ['id', 'first_name'])).sort(
-			(a, b) => a.first_name.localeCompare(b.first_name)
-		);
+
+		const driver1 = await Driver.findOne({ first_name: 'Somchai01' });
+		const driver2 = await Driver.findOne({ first_name: 'Somchai02' });
+
 		await Car.create([
 			{
 				name: 'Car01',
 				license_plate: 'LicensePlate01',
 				model: 'Model01',
-				driver_id: drivers[0].id,
+				driver_id: driver1._id,
 			},
 			{
 				name: 'Car02',
 				license_plate: 'LicensePlate02',
 				model: 'Model02',
-				driver_id: drivers[1].id,
+				driver_id: driver2._id,
 			},
 			{
 				name: 'Car03',
@@ -66,9 +67,10 @@ describe('Emergency Controllers', () => {
 				driver_id: null,
 			},
 		]);
-		const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-			a.name.localeCompare(b.name)
-		);
+
+		const car1 = await Car.findOne({ name: 'Car01' });
+		const car2 = await Car.findOne({ name: 'Car02' });
+		const car3 = await Car.findOne({ name: 'Car03' });
 
 		const currentTime = new Date(Date.now());
 		const hours = (currentTime.getHours() + 17) % 24;
@@ -80,14 +82,14 @@ describe('Emergency Controllers', () => {
 		}${minutes} ${period}`;
 
 		await Emergency.create([
-			{ car_id: cars[0].id, status: 'pending', latitude: 1, longitude: 1 },
+			{ car_id: car1._id, status: 'pending', latitude: 1, longitude: 1 },
 			{
-				car_id: cars[1].id,
+				car_id: car2._id,
 				status: 'inProgress',
 				latitude: 2,
 				longitude: 2,
 			},
-			{ car_id: cars[2].id, status: 'complete', latitude: 3, longitude: 3 },
+			{ car_id: car3._id, status: 'complete', latitude: 3, longitude: 3 },
 		]);
 	});
 
@@ -103,14 +105,15 @@ describe('Emergency Controllers', () => {
 			const cars = await getCurrentData(Car, ['id', 'name', 'driver_id']);
 			const drivers = await getCurrentData(Driver, ['id', 'phone_no']);
 			const expectedData = (await getCurrentData(Emergency, EmergencyField))
-				.map((emergency, index) => {
-					const car = cars.filter((car) => car.id === emergency.car_id)[0];
-					const driver = drivers.filter(
+				.map((emergency) => {
+					const car = cars.find((car) => car.id === emergency.car_id);
+					const driver = drivers.find(
 						(driver) => driver.id.toString() === car.driver_id
-					)[0];
+					);
 					return {
 						id: emergency.id,
 						status: emergency.status,
+						car_id: car.id,
 						car_name: car.name,
 						driver_phone_no: driver?.phone_no ?? '',
 						time: createdTime,
@@ -154,11 +157,9 @@ describe('Emergency Controllers', () => {
 
 	describe('createEmergency', () => {
 		it('should create the emergency, when request is valid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car1 = await Car.findOne({ name: 'Car01' });
 			const newEmergency = {
-				car_id: cars[0].id,
+				car_id: car1._id,
 				status: 'pending',
 				latitude: 4,
 				longitude: 4,
@@ -190,11 +191,9 @@ describe('Emergency Controllers', () => {
 		});
 
 		it('should create the emergency, when status is missing', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car1 = await Car.findOne({ name: 'Car01' });
 			const newEmergency = {
-				car_id: cars[0].id,
+				car_id: car1._id,
 				latitude: 4,
 				longitude: 4,
 			};
@@ -207,12 +206,10 @@ describe('Emergency Controllers', () => {
 			);
 		});
 
-		it('should create the emergency, when latitude is missing', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+		it('should not create the emergency, when latitude is missing', async () => {
+			const car1 = await Car.findOne({ name: 'Car01' });
 			const newEmergency = {
-				car_id: cars[0].id,
+				car_id: car1._id,
 				status: 'pending',
 				longitude: 4,
 			};
@@ -221,16 +218,16 @@ describe('Emergency Controllers', () => {
 				createEmergency,
 				Emergency,
 				EmergencyField,
-				generateRequest(newEmergency)
+				generateRequest(newEmergency),
+				400,
+				'Please add a latitude'
 			);
 		});
 
-		it('should create the emergency, when longitude is missing', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+		it('should not create the emergency, when longitude is missing', async () => {
+			const car1 = await Car.findOne({ name: 'Car01' });
 			const newEmergency = {
-				car_id: cars[0].id,
+				car_id: car1._id,
 				status: 'pending',
 				latitude: 4,
 			};
@@ -239,7 +236,9 @@ describe('Emergency Controllers', () => {
 				createEmergency,
 				Emergency,
 				EmergencyField,
-				generateRequest(newEmergency)
+				generateRequest(newEmergency),
+				400,
+				'Please add a longitude'
 			);
 		});
 
@@ -262,11 +261,9 @@ describe('Emergency Controllers', () => {
 		});
 
 		it('should not create the emergency, when status is invalid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car1 = await Car.findOne({ name: 'Car01' });
 			const newEmergency = {
-				car_id: cars[0].id,
+				car_id: car1._id,
 				status: 'invalid',
 				latitude: 4,
 				longitude: 4,
@@ -283,11 +280,9 @@ describe('Emergency Controllers', () => {
 		});
 
 		it('should not create the emergency, when latitude is invalid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car1 = await Car.findOne({ name: 'Car01' });
 			const newEmergency = {
-				car_id: cars[0].id,
+				car_id: car1._id,
 				status: 'pending',
 				latitude: 'invalid',
 				longitude: 4,
@@ -304,11 +299,9 @@ describe('Emergency Controllers', () => {
 		});
 
 		it('should not create the emergency, when longitude is invalid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car1 = await Car.findOne({ name: 'Car01' });
 			const newEmergency = {
-				car_id: cars[0].id,
+				car_id: car1._id,
 				status: 'pending',
 				latitude: 4,
 				longitude: 'invalid',
@@ -325,11 +318,9 @@ describe('Emergency Controllers', () => {
 		});
 
 		it('should handle errors and return 400 status', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car1 = await Car.findOne({ name: 'Car01' });
 			const newEmergency = {
-				car_id: cars[0].id,
+				car_id: car1._id,
 				status: 'pending',
 				latitude: 4,
 				longitude: 4,
@@ -353,11 +344,9 @@ describe('Emergency Controllers', () => {
 
 	describe('updateEmergency', () => {
 		it('should update the emergency, when request is valid', async () => {
-			const cars = (await getCurrentData(Car, ['id', 'name'])).sort((a, b) =>
-				a.name.localeCompare(b.name)
-			);
+			const car2 = await Car.findOne({ name: 'Car02' });
 			const updatedRequest = {
-				car_id: cars[1].id,
+				car_id: car2._id,
 				status: 'inProgress',
 				latitude: 4,
 				longitude: 4,

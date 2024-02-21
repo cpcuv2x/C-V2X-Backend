@@ -19,7 +19,7 @@ const {
 	executeDeleteTest,
 } = require('../../utils/test');
 
-const RSUField = ['id', 'name', 'recommended_speed'];
+const RSUField = ['id', 'name', 'recommended_speed', 'latitude', 'longitude'];
 const notExistId = { id: '123456789012345678901234' };
 const invalidId = { id: 'invalid' };
 const firstId = async () => {
@@ -30,9 +30,24 @@ const firstId = async () => {
 describe('RSU Controllers', () => {
 	beforeEach(async () => {
 		await RSU.create([
-			{ name: 'RSU01', recommended_speed: '100' },
-			{ name: 'RSU02', recommended_speed: '120' },
-			{ name: 'RSU03', recommended_speed: '140' },
+			{
+				name: 'RSU01',
+				recommended_speed: '100',
+				latitude: '1.1',
+				longitude: '-1.1',
+			},
+			{
+				name: 'RSU02',
+				recommended_speed: '120',
+				latitude: '2.2',
+				longitude: '-2.2',
+			},
+			{
+				name: 'RSU03',
+				recommended_speed: '140',
+				latitude: '3.3',
+				longitude: '-3.3',
+			},
 		]);
 	});
 
@@ -87,7 +102,33 @@ describe('RSU Controllers', () => {
 			);
 		});
 
-		it('should return RSUs filtered by id & name & speed, when there are id & name & speed filters exist', async () => {
+		it('should return RSUs filtered by latitude, when there is a latitude filter', async () => {
+			const rawData = await getCurrentData(RSU, RSUField);
+			const expectedData = [rawData[0]];
+
+			await executeGetTest(
+				getRSUs,
+				generateRequest({
+					latitude: rawData[0].latitude.slice(1),
+				}),
+				generateSuccessResponse(expectedData)
+			);
+		});
+
+		it('should return RSUs filtered by longitude, when there is a longitude filter', async () => {
+			const rawData = await getCurrentData(RSU, RSUField);
+			const expectedData = [rawData[0]];
+
+			await executeGetTest(
+				getRSUs,
+				generateRequest({
+					longitude: rawData[0].longitude.slice(1),
+				}),
+				generateSuccessResponse(expectedData)
+			);
+		});
+
+		it('should return RSUs filtered by id & name & speed, when id & name & speed & latitude & longitude filters exist', async () => {
 			const rawData = await getCurrentData(RSU, RSUField);
 			const expectedData = [rawData[0]];
 
@@ -97,12 +138,14 @@ describe('RSU Controllers', () => {
 					id: rawData[0].id.slice(1),
 					name: rawData[0].name.slice(1),
 					recommended_speed: rawData[0].recommended_speed.slice(1),
+					latitude: rawData[0].latitude.slice(1),
+					longitude: rawData[0].longitude.slice(1),
 				}),
 				generateSuccessResponse(expectedData)
 			);
 		});
 
-		it('should return no RSU filtered by id & name & speed, when there are id & name & speed filters not exist', async () => {
+		it('should return no RSU filtered by id & name & speed, when id & name & speed & latitude & longitude filters not exist', async () => {
 			const rawData = await getCurrentData(RSU, RSUField);
 			const expectedData = [];
 
@@ -112,6 +155,8 @@ describe('RSU Controllers', () => {
 					id: rawData[0].id.slice(1),
 					name: rawData[1].name.slice(1),
 					recommended_speed: rawData[0].recommended_speed.slice(1),
+					latitude: rawData[0].latitude.slice(1),
+					longitude: rawData[0].longitude.slice(1),
 				}),
 				generateSuccessResponse(expectedData)
 			);
@@ -238,6 +283,8 @@ describe('RSU Controllers', () => {
 			const newRSU = {
 				name: 'RSU04',
 				recommended_speed: '160',
+				latitude: '4.4',
+				longitude: '-4.4',
 			};
 
 			await executeCreateTest(
@@ -251,6 +298,8 @@ describe('RSU Controllers', () => {
 		it('should not create the RSU, when name is missing', async () => {
 			const newRSU = {
 				recommended_speed: '160',
+				latitude: '4.4',
+				longitude: '-4.4',
 			};
 
 			await executeCreateTest(
@@ -267,6 +316,8 @@ describe('RSU Controllers', () => {
 			const newRSU = {
 				name: 'RSU 4',
 				recommended_speed: '160',
+				latitude: '4.4',
+				longitude: '-4.4',
 			};
 
 			await executeCreateTest(
@@ -283,6 +334,8 @@ describe('RSU Controllers', () => {
 			const newRSU = {
 				name: 'RSU01',
 				recommended_speed: '160',
+				latitude: '4.4',
+				longitude: '-4.4',
 			};
 
 			await executeCreateTest(
@@ -298,6 +351,8 @@ describe('RSU Controllers', () => {
 		it('should not create the RSU, when speed is missing', async () => {
 			const newRSU = {
 				name: 'RSU04',
+				latitude: '4.4',
+				longitude: '-4.4',
 			};
 
 			await executeCreateTest(
@@ -314,6 +369,8 @@ describe('RSU Controllers', () => {
 			const newRSU = {
 				name: 'RSU04',
 				recommended_speed: 'invalid',
+				latitude: '4.4',
+				longitude: '-4.4',
 			};
 
 			await executeCreateTest(
@@ -326,10 +383,82 @@ describe('RSU Controllers', () => {
 			);
 		});
 
+		it('should not create the RSU, when latitude is missing', async () => {
+			const newRSU = {
+				name: 'RSU04',
+				recommended_speed: '160',
+				longitude: '-4.4',
+			};
+
+			await executeCreateTest(
+				createRSU,
+				RSU,
+				RSUField,
+				generateRequest(newRSU),
+				400,
+				'Please add a latitude'
+			);
+		});
+
+		it('should not create the RSU, when latitude is invalid', async () => {
+			const newRSU = {
+				name: 'RSU04',
+				recommended_speed: '160',
+				latitude: 'invalid',
+				longitude: '-4.4',
+			};
+
+			await executeCreateTest(
+				createRSU,
+				RSU,
+				RSUField,
+				generateRequest(newRSU),
+				400,
+				'Latitude should be a coordinate number'
+			);
+		});
+
+		it('should not create the RSU, when longitude is missing', async () => {
+			const newRSU = {
+				name: 'RSU04',
+				recommended_speed: '160',
+				latitude: '4.4',
+			};
+
+			await executeCreateTest(
+				createRSU,
+				RSU,
+				RSUField,
+				generateRequest(newRSU),
+				400,
+				'Please add a longitude'
+			);
+		});
+
+		it('should not create the RSU, when longitude is invalid', async () => {
+			const newRSU = {
+				name: 'RSU04',
+				recommended_speed: '160',
+				latitude: '4.4',
+				longitude: 'invalid',
+			};
+
+			await executeCreateTest(
+				createRSU,
+				RSU,
+				RSUField,
+				generateRequest(newRSU),
+				400,
+				'Longitude should be a coordinate number'
+			);
+		});
+
 		it('should handle errors and return 400 status', async () => {
 			const newRSU = {
 				name: 'RSU04',
 				recommended_speed: '160',
+				latitude: '4.4',
+				longitude: '-4.4',
 			};
 			const message = 'Error Message';
 			sinon.stub(RSU, 'create').throws(new Error(message));
@@ -353,6 +482,8 @@ describe('RSU Controllers', () => {
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: '160',
+				latitude: '5.5',
+				longitude: '-5.5',
 			};
 
 			await executeUpdateTest(
@@ -366,6 +497,8 @@ describe('RSU Controllers', () => {
 		it('should update the RSU, when name is missing', async () => {
 			const updatedRequest = {
 				recommended_speed: '160',
+				latitude: '5.5',
+				longitude: '-5.5',
 			};
 
 			await executeUpdateTest(
@@ -379,6 +512,38 @@ describe('RSU Controllers', () => {
 		it('should update the RSU, when speed is missing', async () => {
 			const updatedRequest = {
 				name: 'RSU05',
+				latitude: '5.5',
+				longitude: '-5.5',
+			};
+
+			await executeUpdateTest(
+				updateRSU,
+				RSU,
+				RSUField,
+				generateRequest(updatedRequest, await firstId())
+			);
+		});
+
+		it('should update the RSU, when latitude is missing', async () => {
+			const updatedRequest = {
+				name: 'RSU05',
+				recommended_speed: '160',
+				longitude: '-5.5',
+			};
+
+			await executeUpdateTest(
+				updateRSU,
+				RSU,
+				RSUField,
+				generateRequest(updatedRequest, await firstId())
+			);
+		});
+
+		it('should update the RSU, when longitude is missing', async () => {
+			const updatedRequest = {
+				name: 'RSU05',
+				recommended_speed: '160',
+				latitude: '5.5',
 			};
 
 			await executeUpdateTest(
@@ -393,6 +558,8 @@ describe('RSU Controllers', () => {
 			const updatedRequest = {
 				name: 'RSU 5',
 				recommended_speed: '160',
+				latitude: '5.5',
+				longitude: '-5.5',
 			};
 
 			await executeUpdateTest(
@@ -409,6 +576,8 @@ describe('RSU Controllers', () => {
 			const updatedRequest = {
 				name: 'RSU02',
 				recommended_speed: '160',
+				latitude: '5.5',
+				longitude: '-5.5',
 			};
 
 			await executeUpdateTest(
@@ -425,6 +594,8 @@ describe('RSU Controllers', () => {
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: 'invalid',
+				latitude: '5.5',
+				longitude: '-5.5',
 			};
 
 			await executeUpdateTest(
@@ -437,10 +608,48 @@ describe('RSU Controllers', () => {
 			);
 		});
 
+		it('should not update the RSU, when latitude is invalid', async () => {
+			const updatedRequest = {
+				name: 'RSU05',
+				recommended_speed: '160',
+				latitude: 'invalid',
+				longitude: '-5.5',
+			};
+
+			await executeUpdateTest(
+				updateRSU,
+				RSU,
+				RSUField,
+				generateRequest(updatedRequest, await firstId()),
+				400,
+				'Latitude should be a coordinate number'
+			);
+		});
+
+		it('should not update the RSU, when latitude is longitude', async () => {
+			const updatedRequest = {
+				name: 'RSU05',
+				recommended_speed: '160',
+				latitude: '5.5',
+				longitude: 'invalid',
+			};
+
+			await executeUpdateTest(
+				updateRSU,
+				RSU,
+				RSUField,
+				generateRequest(updatedRequest, await firstId()),
+				400,
+				'Longitude should be a coordinate number'
+			);
+		});
+
 		it('should handle valid & not exist ID and return 404 status', async () => {
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: '160',
+				latitude: '5.5',
+				longitude: '-5.5',
 			};
 			const message = 'The RSU not found';
 
@@ -458,6 +667,8 @@ describe('RSU Controllers', () => {
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: '160',
+				latitude: '5.5',
+				longitude: '-5.5',
 			};
 			const message =
 				'Cast to ObjectId failed for value "invalid" (type string) at path "_id" for model "RSU"';
@@ -476,6 +687,8 @@ describe('RSU Controllers', () => {
 			const updatedRequest = {
 				name: 'RSU05',
 				recommended_speed: '160',
+				latitude: '5.5',
+				longitude: '-5.5',
 			};
 			const message = 'Error Message';
 			sinon.stub(RSU, 'findByIdAndUpdate').throws(new Error(message));

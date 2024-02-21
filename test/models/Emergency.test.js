@@ -51,7 +51,7 @@ describe('Emergency Model Validation', () => {
 		}
 	});
 
-	it('should be invalid if status is empty', async () => {
+	it('should be valid if status is empty', async () => {
 		const emergency = new Emergency({
 			car_id: car._id,
 			latitude: 123.456,
@@ -75,9 +75,11 @@ describe('Emergency Model Validation', () => {
 
 		try {
 			await emergency.validate();
-			expect(emergency.latitude).to.equal(null);
+			expect.fail('Validation should have failed');
 		} catch (error) {
-			expect.fail('Validation should have passed');
+			expect(error.errors.latitude.properties.message).to.equal(
+				'Please add a latitude'
+			);
 		}
 	});
 
@@ -90,9 +92,11 @@ describe('Emergency Model Validation', () => {
 
 		try {
 			await emergency.validate();
-			expect(emergency.longitude).to.equal(null);
+			expect.fail('Validation should have failed');
 		} catch (error) {
-			expect.fail('Validation should have passed');
+			expect(error.errors.longitude.properties.message).to.equal(
+				'Please add a longitude'
+			);
 		}
 	});
 });

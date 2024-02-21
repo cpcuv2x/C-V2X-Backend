@@ -1,33 +1,15 @@
+// Express
 const express = require('express');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
-const cookieParser = require('cookie-parser');
-const cors = require('cors');
-const mongoSanitize = require('express-mongo-sanitize');
-const helmet = require('helmet');
-const xss = require('xss-clean');
-const rateLimit = require('express-rate-limit');
-const hpp = require('hpp');
-const swaggerJsDoc = require('swagger-jsdoc');
-const swaggerUI = require('swagger-ui-express');
-const { setupWebRTCSocketIO } = require('./utils/webRTCConnection');
+// Socket
 const http = require('http');
 const socketIO = require('socket.io');
-let { connectRabbitMQ } = require('./utils/rabbitMQConnection');
-
-// Load env vars
-dotenv.config({ path: './config/config.env' });
-
-// Connect to database
-connectDB();
-
-const limiter = rateLimit({
-	windowsMs: 60 * 1000, // 1 min
-	max: 1000,
-});
-
-const app = express();
-
+// Configs
+const dotenv = require('dotenv');
+const connectMongoDB = require('./config/connectMongoDB');
+const { connectRabbitMQ } = require('./config/rabbitMQConnection');
+const { setupWebRTCSocketIO } = require('./config/webRTCConnection');
+// Cookie parser
+const cookieParser = require('cookie-parser');
 // Route files
 const auth = require('./routes/auth');
 const cars = require('./routes/cars');
@@ -38,24 +20,49 @@ const emergencies = require('./routes/emergencies');
 const { fleetController } = require('./controllers/fleet');
 const { createEmergencyFromRabbitMQ } = require('./controllers/emergencies');
 const { socketMiddleware } = require('./middleware/socket');
+// Securities
+const cors = require('cors');
+const helmet = require('helmet');
+const hpp = require('hpp');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+// Swaggers
+const swaggerDocs = require('./config/swaggerDocs');
+const swaggerUI = require('swagger-ui-express');
 
-// app.set('trust proxy', true);
+// Load env vars
+dotenv.config({ path: './config/config.env' });
+
+const APP_PORT = process.env.APP_PORT || 5000;
+const SOCKET_PORT = process.env.SOCKET_PORT || 3426;
+
+// Connect to database
+connectMongoDB();
+
+// Create socket server
+const socket = http.createServer();
+const io = socketIO(socket, {
+	cors: {
+		origin: '*',
+		methods: ['GET', 'POST'],
+	},
+});
+
+// Connect to rabbitMQ
+connectRabbitMQ().then(() => {
+	fleetController(io);
+	createEmergencyFromRabbitMQ(io);
+});
+setupWebRTCSocketIO(io);
+
+// Create app server
+const app = express();
 app.use(cors());
-// app.use(limiter); //Rate Limiting
 app.use(helmet()); //Set security headers
 app.use(express.json());
 app.use(hpp()); //Prevent http param pollutions
 app.use(mongoSanitize()); //Sanitize data
 app.use(xss()); //Prevent XSS attacks
-
-const socket_server = http.createServer({
-	cors: {
-		origin: '*',
-		methods: ['GET'],
-	},
-});
-const socket = socketIO(socket_server);
-
 // Body parser
 app.use('/api/auth', auth);
 app.use('/api/cars', cars);
@@ -63,70 +70,31 @@ app.use('/api/cameras', cameras);
 app.use('/api/drivers', drivers);
 app.use('/api/rsus', rsus);
 app.use('/api/emergencies', socketMiddleware(socket), emergencies);
-
 // Cookie parser
 app.use(cookieParser());
-
-const PORT = process.env.PORT || 5000;
-const SOCKET_PORT = process.env.SOCKET_PORT || 3426;
-
-//Swagger API
-const swaggerOptions = {
-	swaggerDefinition: {
-		openapi: '3.0.0',
-		info: {
-			title: 'C-V2X API',
-			version: '1.0.0',
-			description: 'C-V2X API documents',
-		},
-		components: {
-			securitySchemes: {
-				BearerAuth: {
-					type: 'http',
-					scheme: 'bearer',
-					bearerFormat: 'JWT',
-				},
-			},
-		},
-		security: [
-			{
-				BearerAuth: [],
-			},
-		],
-		servers: [
-			{
-				url: `http://localhost:${PORT}`,
-			},
-		],
-	},
-	apis: ['./routes/*.js'],
-};
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
+// Swagger API
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
-const server = app.listen(
-	PORT,
+// Map socket server to port
+socket.listen(
+	SOCKET_PORT,
+	console.log(`Socket.IO listening on port ${SOCKET_PORT}`)
+);
+
+// Map app server to port
+const appServer = app.listen(
+	APP_PORT,
 	console.log(
-		'Server running in ',
+		'Server running in',
 		process.env.NODE_ENV,
-		' mode on port ',
-		PORT
+		'mode on port',
+		APP_PORT
 	)
 );
 
-connectRabbitMQ().then(() => {
-	fleetController(socket);
-	createEmergencyFromRabbitMQ(socket);
-});
-setupWebRTCSocketIO(server);
-
-socket_server.listen(SOCKET_PORT, () => {
-	console.log(`Socket.IO listening on port ${SOCKET_PORT}`);
-});
-
-//Handle unhandled promise rejections
+// Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
 	console.log(`Error: ${err.message}`);
-	//Close server & exit process
-	server.close(() => process.exit(1));
+	// Close server & exit process
+	appServer.close(() => process.exit(1));
 });

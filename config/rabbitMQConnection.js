@@ -9,8 +9,9 @@ async function connectRabbitMQ() {
 	}
 	connection = await amqp.connect(process.env.RABBITMQ_HOST);
 	connection.on('error', (err) => {
-		console.error('RabbitMQ connection', err);
+		console.log('RabbitMQ connection error', err);
 	});
+	console.log('RabbitMQ connected');
 }
 
 async function publishToQueue(queueName, data) {

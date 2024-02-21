@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { consumeQueue } = require('../utils/rabbitMQConnection');
+const { consumeQueue } = require('../config/rabbitMQConnection');
 const Emergency = require('../models/Emergency');
 const Car = require('../models/Car');
 const { emergencyRegex } = require('../utils/regex');
@@ -105,10 +105,24 @@ exports.createEmergency = async (req, res, next) => {
 			});
 		}
 
-		if (latitude && typeof latitude !== 'number') {
+		if (!latitude) {
+			return res.status(400).json({
+				success: false,
+				error: 'Please add a latitude',
+			});
+		}
+
+		if (typeof latitude !== 'number') {
 			return res.status(400).json({
 				success: false,
 				error: 'Latitude should be number',
+			});
+		}
+
+		if (!longitude) {
+			return res.status(400).json({
+				success: false,
+				error: 'Please add a longitude',
 			});
 		}
 
@@ -127,6 +141,7 @@ exports.createEmergency = async (req, res, next) => {
 			latitude: emergency.latitude,
 			longitude: emergency.longitude,
 		};
+		console.log('hi');
 		req.socket.emit('emergency', data);
 		return res.status(201).json({
 			success: true,

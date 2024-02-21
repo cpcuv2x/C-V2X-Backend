@@ -1,19 +1,10 @@
-const socketIO = require('socket.io');
 const RTCMultiConnectionServer = require('rtcmulticonnection-server');
 
 const cars = [];
 const controlCenters = [];
 
-function setupWebRTCSocketIO(server) {
-	const io = socketIO(server, {
-		cors: {
-			origin: '*',
-			methods: ['GET', 'POST'],
-		},
-	});
-
+function setupWebRTCSocketIO(io) {
 	io.on('connection', (socket) => {
-		// console.log(`Client connected: ${socket.id}`);
 		RTCMultiConnectionServer.addSocket(socket);
 
 		socket.on('control center connecting', async (data) => {
