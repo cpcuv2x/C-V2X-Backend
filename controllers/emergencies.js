@@ -75,122 +75,50 @@ exports.getEmergencies = async (req, res, next) => {
 	}
 };
 
-//@desc     Create new emergency
-//@route    POST /api/emergencies
-//@access   Private
-exports.createEmergency = async (req, res, next) => {
-	try {
-		const { car_id, status, latitude, longitude } = req.body;
-
-		if (!car_id) {
-			return res
-				.status(400)
-				.json({ success: false, error: 'Please add a car_id' });
-		}
-
-		const carExists = await Car.exists({
-			_id: new mongoose.Types.ObjectId(car_id),
-		});
-
-		if (!carExists) {
-			return res
-				.status(404)
-				.json({ success: false, error: 'The car not found' });
-		}
-
-		if (status && !emergencyRegex.test(status)) {
-			return res.status(400).json({
-				success: false,
-				error: 'Status should be pending, inProgress or complete',
-			});
-		}
-
-		if (!latitude) {
-			return res.status(400).json({
-				success: false,
-				error: 'Please add a latitude',
-			});
-		}
-
-		if (typeof latitude !== 'number') {
-			return res.status(400).json({
-				success: false,
-				error: 'Latitude should be number',
-			});
-		}
-
-		if (!longitude) {
-			return res.status(400).json({
-				success: false,
-				error: 'Please add a longitude',
-			});
-		}
-
-		if (longitude && typeof longitude !== 'number') {
-			return res.status(400).json({
-				success: false,
-				error: 'Longitude should be number',
-			});
-		}
-
-		const emergency = await Emergency.create(req.body);
-		const data = {
-			id: emergency._id,
-			car_id: emergency.car_id,
-			status: emergency.status,
-			latitude: emergency.latitude,
-			longitude: emergency.longitude,
-		};
-		req.socket.emit('emergency', data);
-		return res.status(201).json({
-			success: true,
-			data: data,
-		});
-	} catch (err) {
-		return res.status(400).json({ success: false, error: err.message });
-	}
-};
-
-exports.createEmergencyFromRabbitMQ = (socket) => {
+exports.createEmergency = (socket) => {
 	consumeQueue(
 		{
 			queueName: 'emergency',
-			routingKey: ['emergency_obu'],
 			durable: true,
 			noAck: false,
 		},
 		async (msg) => {
+			const failMessagePrefix = 'Fail creating new emergency:';
 			try {
-				const { car_id, status, latitude, longitude } = JSON.parse(
+				const { car_id, latitude, longitude } = JSON.parse(
 					msg.content.toString()
 				);
+
 				if (!car_id) {
-					throw new Error('Please add a car_id');
+					return console.log(failMessagePrefix, 'Please add a car_id');
+				}
+				if (!mongoose.Types.ObjectId.isValid(car_id)) {
+					return console.log(failMessagePrefix, 'Invalid car_id');
 				}
 
 				const carExists = await Car.exists({
 					_id: new mongoose.Types.ObjectId(car_id),
 				});
-
 				if (!carExists) {
-					throw new Error('The car not found');
+					return console.log(failMessagePrefix, 'The car not found');
 				}
 
-				if (status && !emergencyRegex.test(status)) {
-					throw new Error('Status should be pending, inProgress or complete');
+				if (!latitude) {
+					return console.log(failMessagePrefix, 'Please add a latitude');
+				}
+				if (typeof latitude !== 'number') {
+					return console.log(failMessagePrefix, 'Latitude should be number');
 				}
 
-				if (latitude && typeof latitude !== 'number') {
-					throw new Error('Latitude should be number');
+				if (!longitude) {
+					return console.log(failMessagePrefix, 'Please add a longitude');
 				}
-
-				if (longitude && typeof longitude !== 'number') {
-					throw new Error('Longitude should be number');
+				if (typeof longitude !== 'number') {
+					return console.log(failMessagePrefix, 'Longitude should be number');
 				}
 
 				const emergency = await Emergency.create({
 					car_id,
-					status,
 					latitude,
 					longitude,
 				});
@@ -203,7 +131,7 @@ exports.createEmergencyFromRabbitMQ = (socket) => {
 				};
 				socket.emit('emergency', data);
 			} catch (err) {
-				console.log('create Emergency from RabbitMQ: ', err);
+				console.log('Error creating new emergency:', err);
 			}
 		}
 	);

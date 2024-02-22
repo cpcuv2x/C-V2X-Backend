@@ -18,7 +18,7 @@ const drivers = require('./routes/drivers');
 const rsus = require('./routes/rsus');
 const emergencies = require('./routes/emergencies');
 const { fleetController } = require('./controllers/fleet');
-const { createEmergencyFromRabbitMQ } = require('./controllers/emergencies');
+const { createEmergency } = require('./controllers/emergencies');
 const { socketMiddleware } = require('./middleware/socket');
 // Securities
 const cors = require('cors');
@@ -51,7 +51,7 @@ const io = socketIO(socket, {
 // Connect to rabbitMQ
 connectRabbitMQ().then(() => {
 	fleetController(io);
-	createEmergencyFromRabbitMQ(io);
+	createEmergency(io);
 });
 setupWebRTCSocketIO(io);
 
