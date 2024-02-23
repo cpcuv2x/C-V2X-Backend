@@ -36,6 +36,13 @@ exports.getEmergencies = async (req, res, next) => {
 				},
 			},
 			{
+				$addFields: {
+					createdAtLocal: {
+						$add: ['$createdAt', 25200000], // 7 hours in milliseconds
+					},
+				},
+			},
+			{
 				$project: {
 					_id: 0,
 					id: '$_id',
@@ -49,14 +56,14 @@ exports.getEmergencies = async (req, res, next) => {
 						$concat: [
 							{
 								$dateToString: {
-									date: '$createdAt',
+									date: '$createdAtLocal',
 									format: '%H:%M',
 								},
 							},
 							' ',
 							{
 								$cond: {
-									if: { $gte: [{ $hour: '$createdAt' }, 12] },
+									if: { $gte: [{ $hour: '$createdAtLocal' }, 12] },
 									then: 'pm',
 									else: 'am',
 								},
