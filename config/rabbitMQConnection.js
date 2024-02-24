@@ -1,6 +1,7 @@
 const amqp = require('amqplib');
 
 let connection;
+let promiseChannel = null;
 const exchange = 'direct_logs';
 
 async function connectRabbitMQ() {
@@ -16,12 +17,14 @@ async function connectRabbitMQ() {
 
 async function publishToQueue(queueName, data) {
 	try {
-		const channel = await connection.createChannel();
-		channel.on('error', (err) => {
-			console.error('RabbitMQ channel', err);
-		});
-		await channel.assertQueue(queueName, true);
-		channel.sendToQueue(queueName, Buffer.from(data));
+		if (!promiseChannel) {
+			promiseChannel = await connection.createChannel();
+			promiseChannel.on('error', (err) => {
+				console.error('RabbitMQ promiseChannel', err);
+			});
+		}
+		await promiseChannel.assertQueue(queueName, true);
+		promiseChannel.sendToQueue(queueName, Buffer.from(data));
 	} catch (error) {
 		throw new Error(`Error publishing to queue: ${error.message}`);
 	}
