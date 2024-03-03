@@ -8,7 +8,7 @@ function setupWebRTCSocketIO(io) {
 		RTCMultiConnectionServer.addSocket(socket);
 
 		socket.on('control center connecting', async (data) => {
-			console.log('control center connecting');
+			// console.log('control center connecting', data);
 			try {
 				const controlCenter = controlCenters.find(
 					(m) => m.roomID == data.roomID
@@ -26,18 +26,22 @@ function setupWebRTCSocketIO(io) {
 		});
 
 		socket.on('car connecting', async (data) => {
-			console.log('car connecting');
+			// console.log('car connecting');
 			try {
 				const car = cars.find((m) => m.id == data.carID);
 				if (!car) {
 					cars.push({
 						id: data.carID,
 						cam1: data.camNumber == 1 ? socket : null,
-						cam2: data.camNumber != 1 ? socket : null,
+						cam2: data.camNumber == 2 ? socket : null,
+						cam3: data.camNumber == 3 ? socket : null,
+						cam4: data.camNumber == 4 ? socket : null,
 					});
 				} else {
 					car.cam1 = data.camNumber == 1 ? socket : null;
-					car.cam2 = data.camNumber != 1 ? socket : null;
+					car.cam2 = data.camNumber == 2 ? socket : null;
+					car.cam3 = data.camNumber == 3 ? socket : null;
+					car.cam4 = data.camNumber == 4 ? socket : null;
 				}
 			} catch (err) {
 				console.log(err);
@@ -81,6 +85,8 @@ function setupWebRTCSocketIO(io) {
 			// console.log('send object detection', data.roomID);
 			try {
 				controlCenters.forEach((controlCenter) => {
+					// console.log(controlCenter.roomID);
+					// console.log(data.roomID == controlCenter.roomID);
 					if (data.roomID == controlCenter.roomID) {
 						controlCenter.socket.forEach((socket) => {
 							socket.emit('send object detection', data.boxes);
