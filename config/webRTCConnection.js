@@ -26,28 +26,18 @@ function setupWebRTCSocketIO(io) {
 		});
 
 		socket.on('car connecting', async (data) => {
+			console.log('car connecting');
 			try {
 				const car = cars.find((m) => m.id == data.carID);
 				if (!car) {
-					if (data.camNumber == 1) {
-						cars.push({
-							id: data.carID,
-							cam1: socket,
-							cam2: null,
-						});
-					} else {
-						cars.push({
-							id: data.carID,
-							cam1: null,
-							cam2: socket,
-						});
-					}
+					cars.push({
+						id: data.carID,
+						cam1: data.camNumber == 1 ? socket : null,
+						cam2: data.camNumber != 1 ? socket : null,
+					});
 				} else {
-					if (data.camNumber == 1) {
-						car.cam1 = socket;
-					} else {
-						car.cam2 = socket;
-					}
+					car.cam1 = data.camNumber == 1 ? socket : null;
+					car.cam2 = data.camNumber != 1 ? socket : null;
 				}
 			} catch (err) {
 				console.log(err);
