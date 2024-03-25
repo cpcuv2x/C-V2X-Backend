@@ -72,7 +72,7 @@ app.use('/api/cameras', cameras);
 app.use('/api/drivers', drivers);
 // app.use('/api/rsus', rsus);
 app.use('/api/emergencies', socketMiddleware(io), emergencies);
-app.use('/api/video-upload', videoUpload);
+app.use('/api/videos', videoUpload);
 // Cookie parser
 app.use(cookieParser());
 // Swagger API

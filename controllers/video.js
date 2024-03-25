@@ -1,5 +1,10 @@
 var cloudinary = require('cloudinary').v2;
 const dotenv = require('dotenv');
+const Video = require('../models/Video');
+const Camera = require('../models/Camera');
+const Car = require('../models/Car');
+
+const mongoose = require('mongoose');
 
 exports.videoUpload = async (req, res, next) => {
 	let url = '';
@@ -16,7 +21,45 @@ exports.videoUpload = async (req, res, next) => {
 			chunk_size: 6000000,
 		});
 		url = uploadedResponse.url;
+		await Video.create({
+			url,
+			cam_id: new mongoose.Types.ObjectId(req.body.cam_id),
+			car_id: new mongoose.Types.ObjectId(req.body.car_id),
+		});
 		return res.status(200).json({ data: url });
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json({ error: 'Something wrong' });
+	}
+};
+
+exports.listExistVideos = async (req, res, next) => {
+	const { carName, cameraName } = req.query;
+	if (!carName || !cameraName) {
+		return res
+			.status(400)
+			.json({ error: 'carName and cameraName must be provided' });
+	}
+	try {
+		const car = await Car.findOne({ name: carName });
+		const camera = await Camera.findOne({ name: cameraName });
+
+		if (!car || !camera) {
+			return res.status(404).json({ error: 'Car or Camera not found' });
+		}
+
+		// Find the videos that match the provided car and camera IDs
+		const videos = await Video.find({
+			car_id: car._id,
+			camera_id: camera._id,
+		}).sort({ createdAt: -1 });
+
+		// Extracting the distinct createdAt values
+		const timeStampUrlMapper = videos.map((video) => {
+			return { videosTimestamp: video.createdAt, url: video.url };
+		});
+
+		return res.json({ timeStampUrlMapper });
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({ error: 'Something wrong' });
