@@ -34,32 +34,26 @@ exports.videoUpload = async (req, res, next) => {
 };
 
 exports.listExistVideos = async (req, res, next) => {
-	const { carName, cameraName } = req.query;
-	if (!carName || !cameraName) {
+	const { car_id, camera_id } = req.query;
+	if (!car_id || !camera_id) {
 		return res
 			.status(400)
-			.json({ error: 'carName and cameraName must be provided' });
+			.json({ error: 'car_id and camera_id must be provided' });
 	}
 	try {
-		const car = await Car.findOne({ name: carName });
-		const camera = await Camera.findOne({ name: cameraName });
-
-		if (!car || !camera) {
-			return res.status(404).json({ error: 'Car or Camera not found' });
-		}
-
 		// Find the videos that match the provided car and camera IDs
 		const videos = await Video.find({
-			car_id: car._id,
-			camera_id: camera._id,
+			$and: [
+				{ car_id: new mongoose.Types.ObjectId(car_id) },
+				{ cam_id: new mongoose.Types.ObjectId(camera_id) },
+			],
 		}).sort({ createdAt: -1 });
 
 		// Extracting the distinct createdAt values
-		const timeStampUrlMapper = videos.map((video) => {
+		const data = videos.map((video) => {
 			return { videosTimestamp: video.createdAt, url: video.url };
 		});
-
-		return res.json({ timeStampUrlMapper });
+		return res.json({ data });
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json({ error: 'Something wrong' });
