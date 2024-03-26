@@ -112,7 +112,6 @@ async function fleetController(io) {
 					failMessagePrefix,
 					"Type should be 'ACCIDENT', 'CLOSED ROAD', 'CONSTRUCTION', or 'TRAFFIC CONGESTION'"
 				);
-			console.log('im alive');
 			if (!mongoose.Types.ObjectId.isValid(rsu_id)) {
 				return console.log(failMessagePrefix, 'Invalid rsu_id', rsu_id);
 			}
