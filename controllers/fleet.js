@@ -2,6 +2,7 @@ const {
 	consumeQueue,
 	publishToQueue,
 } = require('../config/rabbitMQConnection');
+const { reportRegex } = require('../utils/regex');
 const Report = require('../models/Report');
 const RSU = require('../models/RSU');
 const mongoose = require('mongoose');
@@ -95,9 +96,9 @@ async function fleetController(io) {
 	});
 
 	consumeQueue({ queueName: 'new_report' }, async (msg) => {
-		const data = JSON.parse(msg.content.toString());
-		const failMessagePrefix = 'Fail creating new report:';
 		try {
+			const data = JSON.parse(msg.content.toString());
+			const failMessagePrefix = 'Fail creating new report:';
 			const { type, rsu_id, latitude, longitude } = data;
 
 			if (!type) return console.log(failMessagePrefix, 'Please add a type');
@@ -111,9 +112,11 @@ async function fleetController(io) {
 					failMessagePrefix,
 					"Type should be 'ACCIDENT', 'CLOSED ROAD', 'CONSTRUCTION', or 'TRAFFIC CONGESTION'"
 				);
+			console.log('im alive');
 			if (!mongoose.Types.ObjectId.isValid(rsu_id)) {
 				return console.log(failMessagePrefix, 'Invalid rsu_id', rsu_id);
 			}
+
 			const rsu = await RSU.findById(rsu_id);
 			if (!rsu) return console.log(failMessagePrefix, 'RSU not found');
 			if (typeof latitude !== 'number')
