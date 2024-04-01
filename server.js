@@ -70,7 +70,7 @@ app.use('/api/auth', auth);
 app.use('/api/cars', cars);
 app.use('/api/cameras', cameras);
 app.use('/api/drivers', drivers);
-// app.use('/api/rsus', rsus);
+app.use('/api/rsus', rsus);
 app.use('/api/emergencies', socketMiddleware(io), emergencies);
 app.use('/api/videos', videoUpload);
 // Cookie parser
