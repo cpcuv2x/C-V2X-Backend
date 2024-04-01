@@ -63,8 +63,8 @@ app.use(helmet()); //Set security headers
 app.use(hpp()); //Prevent http param pollutions
 app.use(mongoSanitize()); //Sanitize data
 app.use(xss()); //Prevent XSS attacks
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ limit: '100mb' }));
+app.use(express.json({ limit: '300mb' }));
+app.use(express.urlencoded({ limit: '300mb' }));
 // Body parser
 app.use('/api/auth', auth);
 app.use('/api/cars', cars);
