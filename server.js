@@ -59,7 +59,7 @@ setupWebRTCSocketIO(io);
 // Create app server
 const app = express();
 app.use(cors());
-app.use(helmet()); //Set security headers
+//app.use(helmet()) Set security headers need to remove for allow video sending
 app.use(hpp()); //Prevent http param pollutions
 app.use(mongoSanitize()); //Sanitize data
 app.use(xss()); //Prevent XSS attacks
