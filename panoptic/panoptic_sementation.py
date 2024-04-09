@@ -18,7 +18,7 @@ from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
 cfg = get_cfg()
-fileName = "WIN_25660128_14_44_33_Pro"
+fileName = "65ac9720191a85b6842de0ec-65940703ce9bc3c043a77615-1712647541201"
 
 def load_model():
     # Panoptic Segmentation
@@ -37,10 +37,14 @@ def pred():
     # define video writer object
     videoWidth = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
     videoHeight = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = vid.get(cv2.CAP_PROP_FPS)
+    codec = int(vid.get(cv2.CAP_PROP_FOURCC))
+    print(fps,vid.get(cv2.CAP_PROP_FOURCC))
 
-    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+    output = cv2.VideoWriter(f'../videos/panoptic/{fileName}.mp4', codec, fps, (videoWidth,videoHeight))
+    # fourcc = cv2.VideoWriter_fourcc(*'XVID')
     # Set the frame rate to match your source video (change the 24.0 value if needed)
-    output = cv2.VideoWriter(f'../videos/panoptic/{fileName}.mp4', fourcc, 24.0, (videoWidth,videoHeight))
+    # output = cv2.VideoWriter(f'../videos/panoptic/{fileName}.mp4', fourcc, 24.0, (videoWidth,videoHeight))
     
     # Capture the video frame by frame
     ret, frame = vid.read()
