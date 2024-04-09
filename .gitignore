@@ -6,3 +6,4 @@ config/config.env
 # ignore test coverage
 coverage/*
 .nyc_output/*
+videos
