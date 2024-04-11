@@ -4,11 +4,14 @@ FROM node:20.6.1-alpine
 # Set working directory inside the container
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+# Install necessary packages (curl and others)
+RUN apk add --no-cache bash curl ca-certificates python3 py3-pip
 
-# Install dependencies
-RUN npm install && npm cache clean --force
+
+# Install Python dependencies
+RUN pip install pyyaml \
+    && pip install torch torchvision -f https://download.pytorch.org/whl/torch_stable.html \
+    && python -m pip install git+https://github.com/facebookresearch/detectron2.git
 
 # Copy the rest of the application code
 COPY . .

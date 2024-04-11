@@ -1,3 +1,4 @@
+import argparse
 import torch, torchvision
 print(torch.__version__, torch.cuda.is_available())
 # Some basic setup:
@@ -18,7 +19,6 @@ from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
 cfg = get_cfg()
-fileName = "65ac9720191a85b6842de0ec-65940703ce9bc3c043a77615-1712647541201"
 
 def load_model():
     # Panoptic Segmentation
@@ -29,10 +29,10 @@ def load_model():
     # Find a model from detectron2's model zoo. You can use the https://dl.fbaipublicfiles... url as well
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-PanopticSegmentation/panoptic_fpn_R_101_3x.yaml")
 
-def pred():
+def pred(fileName):
     predictor = DefaultPredictor(cfg)
     # define a video capture object and source video
-    vid = cv2.VideoCapture(f'../videos/original/{fileName}.mp4')
+    vid = cv2.VideoCapture(f'./videos/original/{fileName}.mp4')
 
     # define video writer object
     videoWidth = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -41,7 +41,7 @@ def pred():
     codec = int(vid.get(cv2.CAP_PROP_FOURCC))
     print(fps,vid.get(cv2.CAP_PROP_FOURCC))
 
-    output = cv2.VideoWriter(f'../videos/panoptic/{fileName}.mp4', codec, fps, (videoWidth,videoHeight))
+    output = cv2.VideoWriter(f'./videos/panoptic/{fileName}.mp4', codec, fps, (videoWidth,videoHeight))
     # fourcc = cv2.VideoWriter_fourcc(*'XVID')
     # Set the frame rate to match your source video (change the 24.0 value if needed)
     # output = cv2.VideoWriter(f'../videos/panoptic/{fileName}.mp4', fourcc, 24.0, (videoWidth,videoHeight))
@@ -76,5 +76,11 @@ def pred():
     # # Destroy all the windows
     cv2.destroyAllWindows()
     
-load_model()
-pred()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Run Panoptic Segmentation on a video.')
+    parser.add_argument('fileName', type=str, help='Name of the video file (without extension)')
+    args = parser.parse_args()
+
+    load_model()
+    pred(args.fileName)
