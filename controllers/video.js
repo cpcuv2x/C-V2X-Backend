@@ -1,17 +1,22 @@
 const fs = require('fs');
 const path = require('path');
 
-const videoOriginalDirectory = path.join(__dirname, '../videos/original');
-// Ensure the videos directory exists
-if (!fs.existsSync(videoOriginalDirectory)) {
-	fs.mkdirSync(videoOriginalDirectory);
-}
+const videoDirectory = path.join('/data/videos/');
+// if (!fs.existsSync(videoDirectory)) {
+// 	fs.mkdirSync(videoDirectory);
+// }
 
-const videoPanopticDirectory = path.join(__dirname, '../videos/panoptic');
+const videoOriginalDirectory = path.join(__dirname, '../data/videos/original');
 // Ensure the videos directory exists
-if (!fs.existsSync(videoPanopticDirectory)) {
-	fs.mkdirSync(videoPanopticDirectory);
-}
+// if (!fs.existsSync(videoOriginalDirectory)) {
+// 	fs.mkdirSync(videoOriginalDirectory);
+// }
+
+const videoPanopticDirectory = path.join(__dirname, '../data/videos/panoptic');
+// Ensure the videos directory exists
+// if (!fs.existsSync(videoPanopticDirectory)) {
+// 	fs.mkdirSync(videoPanopticDirectory);
+// }
 
 exports.videoUpload = async (req, res, next) => {
 	try {
@@ -31,6 +36,7 @@ exports.videoUpload = async (req, res, next) => {
 			videoOriginalDirectory,
 			fileName + '.mp4'
 		);
+		console.log(destinationPath);
 		fs.writeFile(destinationPath, videoData, (err) => {
 			if (err) {
 				return res.status(500).json({ error: 'Error saving file.' });

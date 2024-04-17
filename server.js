@@ -77,8 +77,6 @@ app.use('/api/videos', videoUpload);
 app.use(cookieParser());
 // Swagger API
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
-const { scanAndProcessVideos } = require('./panoptic/panopticScript');
-setInterval(scanAndProcessVideos, 30000);
 
 // Map socket server to port
 socket.listen(

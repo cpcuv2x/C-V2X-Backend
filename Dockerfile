@@ -5,14 +5,7 @@ FROM node:20.6.1-alpine
 WORKDIR /usr/src/app
 
 # Install necessary packages (curl and others)
-RUN apk add --no-cache bash curl ca-certificates python3 py3-pip
-
-
-# Install Python dependencies
-RUN pip install pyyaml \
-    && pip install torch torchvision -f https://download.pytorch.org/whl/torch_stable.html \
-    && python -m pip install git+https://github.com/facebookresearch/detectron2.git
-
+RUN apk add --no-cache bash curl ca-certificates
 # Copy the rest of the application code
 COPY . .
 
