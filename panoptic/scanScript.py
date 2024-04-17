@@ -3,8 +3,8 @@ import subprocess
 from pathlib import Path
 
 is_panoptic_in_progress = False
-video_original_directory = Path("C:/data") / 'videos' / 'original'
-video_panoptic_directory = Path('C:/data') / 'videos' / 'panoptic'
+video_original_directory = Path("/data") / 'videos' / 'original'
+video_panoptic_directory = Path('/data') / 'videos' / 'panoptic'
 print(video_original_directory)
 
 # Ensure the videos directory exists
