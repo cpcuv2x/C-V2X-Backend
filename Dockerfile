@@ -6,6 +6,13 @@ WORKDIR /usr/src/app
 
 # Install necessary packages (curl and others)
 RUN apk add --no-cache bash curl ca-certificates
+
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install && npm cache clean --force
+
 # Copy the rest of the application code
 COPY . .
 
