@@ -20,7 +20,7 @@ class Detector:
         self.predictor = DefaultPredictor(self.cfg)
 
     def onVideo(self, fileName):
-        cap = cv2.VideoCapture(f'C:/data/videos/original/{fileName}.mp4')
+        cap = cv2.VideoCapture(f'data/videos/original/{fileName}.mp4')
 
         # define video writer object
         videoWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -29,7 +29,7 @@ class Detector:
         codec = int(cap.get(cv2.CAP_PROP_FOURCC))
         print(fps,cap.get(cv2.CAP_PROP_FOURCC))
 
-        output = cv2.VideoWriter(f'C:/data/videos/panoptic/{fileName}.mp4', codec, 15, (videoWidth,videoHeight))
+        output = cv2.VideoWriter(f'data/videos/panoptic/{fileName}.mp4', codec, 15, (videoWidth,videoHeight))
 
         if cap.isOpened() == False :
             print("Error opening file ...")
