@@ -1,11 +1,13 @@
 import os
-import subprocess
 from pathlib import Path
+from Detector import *
+import time
 
 is_panoptic_in_progress = False
 video_original_directory = Path("/data") / 'videos' / 'original'
 video_panoptic_directory = Path('/data') / 'videos' / 'panoptic'
 print(video_original_directory)
+detector = Detector()
 
 # Ensure the videos directory exists
 video_original_directory.mkdir(parents=True, exist_ok=True)
@@ -34,23 +36,14 @@ def run_python_script(file_name):
     if is_panoptic_in_progress:
         return
     is_panoptic_in_progress = True
-    print(f"Run panoptic file: {file_name}")
-    activate_env_command = 'conda activate env_pytorch &&'
-    command = f"{activate_env_command} python ./panoptic/panoptic_sementation.py {file_name}"
-    python_process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = python_process.communicate()
-    print(f"Python script stdout: {stdout.decode()}")
-    print(f"Python script stderr: {stderr.decode()}")
-    print(f"Python script process exited with code {python_process.returncode}")
+    print(f"\nRun panoptic file: {file_name}\n")
+    detector.onVideo(file_name)
     is_panoptic_in_progress = False
-
-import time
-
 # Define the scan_and_process_videos function and its dependencies here
 
 def run_scan_and_process_videos():
     while True:
-        print("Run Scan")
+        print("\nRun Scan\n")
         scan_and_process_videos()
         time.sleep(60)  # Sleep for 60 seconds (1 minute)
 
