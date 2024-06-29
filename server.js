@@ -18,8 +18,9 @@ const drivers = require('./routes/drivers');
 const rsus = require('./routes/rsus');
 const emergencies = require('./routes/emergencies');
 const { fleetController } = require('./controllers/fleet');
-const { createEmergencyFromRabbitMQ } = require('./controllers/emergencies');
+const { createEmergency } = require('./controllers/emergencies');
 const { socketMiddleware } = require('./middleware/socket');
+const videoUpload = require('./routes/video');
 // Securities
 const cors = require('cors');
 const helmet = require('helmet');
@@ -51,25 +52,27 @@ const io = socketIO(socket, {
 // Connect to rabbitMQ
 connectRabbitMQ().then(() => {
 	fleetController(io);
-	createEmergencyFromRabbitMQ(io);
+	createEmergency(io);
 });
 setupWebRTCSocketIO(io);
 
 // Create app server
 const app = express();
 app.use(cors());
-app.use(helmet()); //Set security headers
-app.use(express.json());
+//app.use(helmet()) Set security headers need to remove for allow video sending
 app.use(hpp()); //Prevent http param pollutions
 app.use(mongoSanitize()); //Sanitize data
 app.use(xss()); //Prevent XSS attacks
+app.use(express.json({ limit: '300mb' }));
+app.use(express.urlencoded({ limit: '300mb' }));
 // Body parser
 app.use('/api/auth', auth);
 app.use('/api/cars', cars);
 app.use('/api/cameras', cameras);
 app.use('/api/drivers', drivers);
 app.use('/api/rsus', rsus);
-app.use('/api/emergencies', socketMiddleware(socket), emergencies);
+app.use('/api/emergencies', socketMiddleware(io), emergencies);
+app.use('/api/videos', videoUpload);
 // Cookie parser
 app.use(cookieParser());
 // Swagger API
@@ -94,7 +97,7 @@ const appServer = app.listen(
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
-	console.log(`Error: ${err.message}`);
+	console.log(`Error: ${err.stack}`);
 	// Close server & exit process
 	appServer.close(() => process.exit(1));
 });

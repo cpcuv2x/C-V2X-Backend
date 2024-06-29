@@ -2,24 +2,34 @@ const {
 	consumeQueue,
 	publishToQueue,
 } = require('../config/rabbitMQConnection');
+const { reportRegex } = require('../utils/regex');
 const Report = require('../models/Report');
 const RSU = require('../models/RSU');
 const mongoose = require('mongoose');
 
-async function fleetController(io) {
+function consumeLocation(io) {
 	consumeQueue({ queueName: 'location' }, async (msg) => {
 		const data = JSON.parse(msg.content.toString());
-		if (data.type === 'RSU') {
-			const rsu = await RSU.findById(data.id);
+		const { id, type, latitude, longitude } = data;
+		if (!mongoose.Types.ObjectId.isValid(id)) {
+			return console.log('Fail consuming location: Invalid id', id);
+		}
+		io.emit('location', data);
+
+		if (type === 'RSU') {
+			const rsu = await RSU.findById(id);
 			if (
-				rsu.latitude.toString() !== data.latitude.toString() ||
-				rsu.longitude.toString() !== data.longitude.toString()
+				rsu &&
+				latitude &&
+				longitude &&
+				(rsu.latitude.toString() !== latitude.toString() ||
+					rsu.longitude.toString() !== longitude.toString())
 			) {
 				await RSU.findByIdAndUpdate(
-					data.id,
+					id,
 					{
-						latitude: data.latitude.toString(),
-						longitude: data.longitude.toString(),
+						latitude: latitude.toString(),
+						longitude: longitude.toString(),
 					},
 					{
 						new: true,
@@ -28,18 +38,18 @@ async function fleetController(io) {
 				);
 			}
 		}
-		io.emit('location', data);
 	});
+}
 
-	consumeQueue({ queueName: 'car_speed' }, (msg) => {
-		const data = JSON.parse(msg.content.toString());
-		io.emit('car_speed', data);
-	});
-
+function consumeHeartbeat(io) {
 	consumeQueue({ queueName: 'heartbeat' }, async (msg) => {
 		const data = JSON.parse(msg.content.toString());
-		// io.emit('heartbeat', data);
 		const { id, type } = data;
+		if (!mongoose.Types.ObjectId.isValid(id)) {
+			return console.log('Fail consuming heartbeat: Invalid id', id);
+		}
+		io.emit('heartbeat', data);
+
 		if (type === 'RSU') {
 			const reports = await Report.aggregate([
 				{
@@ -60,44 +70,58 @@ async function fleetController(io) {
 				publishToQueue(`reports_${id}`, JSON.stringify(reports));
 			}
 
-			const rsu = await RSU.findById(id);
-			publishToQueue(
-				`rec_speed_${id}`,
-				JSON.stringify({
-					rsu_id: id,
-					recommend_speed: parseFloat(rsu.recommended_speed),
-					unit: 'km/h',
-					timestamp: new Date(),
-				})
-			);
+			const rsu = await RSU.findOne({ _id: new mongoose.Types.ObjectId(id) });
+			if (rsu) {
+				publishToQueue(
+					`rec_speed_${id}`,
+					JSON.stringify({
+						rsu_id: id,
+						recommend_speed: parseFloat(rsu.recommended_speed),
+						unit: 'km/h',
+						timestamp: new Date(),
+					})
+				);
+			}
 		}
+	});
+}
+
+async function fleetController(io) {
+	consumeLocation(io);
+	consumeHeartbeat(io);
+
+	consumeQueue({ queueName: 'car_speed' }, (msg) => {
+		const data = JSON.parse(msg.content.toString());
+		io.emit('car_speed', data);
 	});
 
 	consumeQueue({ queueName: 'new_report' }, async (msg) => {
-		const data = JSON.parse(msg.content.toString());
 		try {
+			const data = JSON.parse(msg.content.toString());
+			const failMessagePrefix = 'Fail creating new report:';
 			const { type, rsu_id, latitude, longitude } = data;
 
-			if (!type)
-				throw new Error('Error creating new report: Please add a type');
-			if (!rsu_id)
-				throw new Error('Error creating new report: Please add a rsu_id');
+			if (!type) return console.log(failMessagePrefix, 'Please add a type');
+			if (!rsu_id) return console.log(failMessagePrefix, 'Please add a rsu_id');
 			if (!latitude)
-				throw new Error('Error creating new report: Please add a latitude');
+				return console.log(failMessagePrefix, 'Please add a latitude');
 			if (!longitude)
-				throw new Error('Error creating new report: Please add a longitude');
+				return console.log(failMessagePrefix, 'Please add a longitude');
 			if (!reportRegex.test(type))
-				throw new Error(
-					"Error creating new report: Type should be 'ACCIDENT', 'CLOSED ROAD', 'CONSTRUCTION', or 'TRAFFIC CONGESTION'"
+				return console.log(
+					failMessagePrefix,
+					"Type should be 'ACCIDENT', 'CLOSED ROAD', 'CONSTRUCTION', or 'TRAFFIC CONGESTION'"
 				);
+			if (!mongoose.Types.ObjectId.isValid(rsu_id)) {
+				return console.log(failMessagePrefix, 'Invalid rsu_id', rsu_id);
+			}
+
 			const rsu = await RSU.findById(rsu_id);
-			if (!rsu) throw new Error('Error creating new report: RSU not found');
+			if (!rsu) return console.log(failMessagePrefix, 'RSU not found');
 			if (typeof latitude !== 'number')
-				throw new Error('Error creating new report: Latitude must be a number');
+				return console.log(failMessagePrefix, 'Latitude must be a number');
 			if (typeof longitude !== 'number')
-				throw new Error(
-					'Error creating new report: Longitude must be a number'
-				);
+				return console.log(failMessagePrefix, 'Longitude must be a number');
 
 			const report = {
 				type: type,
@@ -106,9 +130,9 @@ async function fleetController(io) {
 				longitude: longitude,
 			};
 			await Report.create(report);
-			console.log('Successfully add a report :', report);
+			console.log('Successfully add a report:', report);
 		} catch (error) {
-			throw new Error(`Error creating new report: ${error.message}`);
+			throw new Error('Error creating new report:', error.message);
 		}
 	});
 }

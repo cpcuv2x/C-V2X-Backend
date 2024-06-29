@@ -1,18 +1,12 @@
 const express = require('express');
 const {
 	getEmergencies,
-	createEmergency,
 	updateEmergency,
 } = require('../controllers/emergencies');
 
 const router = express.Router();
 
-const { protect, authorize } = require('../middleware/auth');
-
-router
-	.route('/')
-	.get(getEmergencies)
-	.post(protect, authorize('driver'), createEmergency);
+router.route('/').get(getEmergencies);
 router.route('/:id').put(updateEmergency);
 
 module.exports = router;

@@ -450,7 +450,7 @@ exports.updateCar = async (req, res, next) => {
 		}
 
 		const driverCarExists = await Car.exists({ driver_id: driver_id });
-		if (driverCarExists) {
+		if (driverCarExists && driverCarExists._id.toString() !== req.params.id) {
 			return res.status(400).json({
 				success: false,
 				error: 'Driver is already registered to another car',

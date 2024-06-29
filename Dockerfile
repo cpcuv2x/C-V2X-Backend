@@ -4,6 +4,9 @@ FROM node:20.6.1-alpine
 # Set working directory inside the container
 WORKDIR /usr/src/app
 
+# Install necessary packages (curl and others)
+RUN apk add --no-cache bash curl ca-certificates
+
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
