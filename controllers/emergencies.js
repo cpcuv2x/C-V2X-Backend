@@ -144,6 +144,64 @@ exports.createEmergency = (socket) => {
 	);
 };
 
+exports.createEmergencyFromRabbitMQ = (socket) => {
+	consumeQueue(
+		{
+			queueName: 'emergency',
+			routingKey: ['emergency_obu'],
+			durable: true,
+			noAck: false,
+		},
+		async (msg) => {
+			try {
+				const { car_id, status, latitude, longitude } = JSON.parse(
+					msg.content.toString()
+				);
+				if (!car_id) {
+					throw new Error('Please add a car_id');
+				}
+
+				const carExists = await Car.exists({
+					_id: new mongoose.Types.ObjectId(car_id),
+				});
+
+				if (!carExists) {
+					throw new Error('The car not found');
+				}
+
+				if (status && !emergencyRegex.test(status)) {
+					throw new Error('Status should be pending, inProgress or complete');
+				}
+
+				if (latitude && typeof latitude !== 'number') {
+					throw new Error('Latitude should be number');
+				}
+
+				if (longitude && typeof longitude !== 'number') {
+					throw new Error('Longitude should be number');
+				}
+
+				const emergency = await Emergency.create({
+					car_id,
+					status,
+					latitude,
+					longitude,
+				});
+				const data = {
+					id: emergency._id,
+					car_id: emergency.car_id,
+					status: emergency.status,
+					latitude: emergency.latitude,
+					longitude: emergency.longitude,
+				};
+				socket.emit('emergency', data);
+			} catch (err) {
+				console.log('create Emergency from RabbitMQ: ', err);
+			}
+		}
+	);
+};
+
 //@desc     Update emergency
 //@route    PUT /api/emergencies/:id
 //@access   Public
