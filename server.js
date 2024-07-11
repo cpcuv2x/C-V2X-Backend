@@ -18,7 +18,7 @@ const drivers = require('./routes/drivers');
 const rsus = require('./routes/rsus');
 const emergencies = require('./routes/emergencies');
 const { fleetController } = require('./controllers/fleet');
-const { createEmergency } = require('./controllers/emergencies');
+const { createEmergency, setupEmergencyStop } = require('./controllers/emergencies');
 const { socketMiddleware } = require('./middleware/socket');
 const videoUpload = require('./routes/video');
 // Securities
@@ -55,6 +55,7 @@ connectRabbitMQ().then(() => {
 	createEmergency(io);
 });
 setupWebRTCSocketIO(io);
+setupEmergencyStop(io);
 
 // Create app server
 const app = express();

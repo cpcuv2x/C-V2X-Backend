@@ -272,3 +272,17 @@ exports.updateEmergency = async (req, res, next) => {
 		return res.status(400).json({ success: false, error: err.message });
 	}
 };
+
+exports.setupEmergencyStop = (io) => {
+	io.on('connection', (socket) => {
+		socket.on('join', (car_id) => {
+			socket.join(car_id)
+			console.log('connected to a car:', car_id);
+		})
+
+		socket.on('emergency_stop', (car_id) => {
+			socket.to(car_id).emit('emergency_stop', car_id)
+			console.log('emergency stop to car id:' + car_id);
+		});
+	});
+}
