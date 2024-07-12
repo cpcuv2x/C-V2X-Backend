@@ -278,15 +278,24 @@ exports.setupEmergencyStop = (io) => {
 	io.on('connection', (socket) => {
 		socket.on('join', (car_id) => {
 			socket.join(car_id)
-			console.log('connected to a car:', car_id);
 		})
 
-		socket.on('emergency_stop', async (car_id) => {
-			socket.to(car_id).emit('emergency_stop', car_id)
-			console.log('emergency stop to car id:' + car_id);
+		socket.on('emergency_stop_req', async (car_id) => {
+			socket.to(car_id).emit('emergency_stop_req', car_id)
+			console.log('emergency stop to car id', car_id);
 			Logs.create({
 				car_id: car_id,
-				type: 'emergency_stop',
+				type: 'emergency_stop_req',
+			});
+		});
+
+		socket.on('emergency_stop_res', (message) => {
+			const {car_id, success} = {...message}
+			socket.to(car_id).emit('emergency_stop_res', message)
+			console.log('emergency stop response from', car_id, success);
+			Logs.create({
+				car_id: car_id,
+				type: 'emergency_stop_res',
 			});
 		});
 	});
