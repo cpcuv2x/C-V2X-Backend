@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { consumeQueue } = require('../config/rabbitMQConnection');
 const Emergency = require('../models/Emergency');
+const Logs = require('../models/Logs');
 const Car = require('../models/Car');
 const { emergencyRegex } = require('../utils/regex');
 
@@ -280,9 +281,13 @@ exports.setupEmergencyStop = (io) => {
 			console.log('connected to a car:', car_id);
 		})
 
-		socket.on('emergency_stop', (car_id) => {
+		socket.on('emergency_stop', async (car_id) => {
 			socket.to(car_id).emit('emergency_stop', car_id)
 			console.log('emergency stop to car id:' + car_id);
+			Logs.create({
+				car_id: car_id,
+				type: 'emergency_stop',
+			});
 		});
 	});
 }
